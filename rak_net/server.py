@@ -29,6 +29,7 @@
 #                                                                              #
 ################################################################################
 
+from rak_net.connection import connection
 from rak_net.constant.protocol_info import protocol_info
 from rak_net.handler.offline_ping_handler import offline_ping_handler
 from rak_net.handler.open_connection_request_1_handler import open_connection_request_1_handler
@@ -39,16 +40,28 @@ import random
 import sys
 
 class server:
-    def __init__(self, name: str, hostname: str, port: int, ipv: int = 4):
+    def __init__(self, name: str, hostname: str, port: int, ipv: int = 4) -> None:
         self.name: str = name
         self.address: object = internet_address(hostname, port, ipv)
         self.guid: int = random.randint(0, sys.maxsize)
         self.socket: object = udp_server_socket(hostname, port, ipv)
+        self.connections: dict = {}
             
-    def sendData(self, data: bytes, address: object):
+    def addConnection(address: object, mtu_size: int) -> None:
+        self.connections[address.token] = connection(address, mtu_size, self)
+        
+    def removeConnection(address: object) -> None:
+        if address.token in self.connections:
+            del self.connections[address.token]
+            
+    def getConnection(address: object) -> object:
+        if address.token in self.connections:
+            return self.connections[address.token]
+            
+    def sendData(self, data: bytes, address: object) -> None:
         self.socket.send(data, address.hostname, address.port)
 
-    def handle(self):
+    def handle(self) -> None:
         recv = self.socket.receive()
         if recv is not None:
             address: object = internet_address(recv[1][0], recv[1][1])
