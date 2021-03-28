@@ -52,10 +52,16 @@ class udp_server_socket:
         self.socket.setblocking(False)
             
     def receive(self) -> tuple:
-        return self.socket.recvfrom(65535)
+        try:
+            return self.socket.recvfrom(65535)
+        except Exception:
+            return None
       
     def send(self, data: bytes, hostname: str, port: int) -> None:
-        self.socket.sendto(data, (hostname, port))
+        try:
+            self.socket.sendto(data, (hostname, port))
+        except Exception:
+            return None
         
     def close(self) -> None:
         self.socket.close()
