@@ -30,9 +30,11 @@
 ################################################################################
 
 class protocol_info:
-    # RakNet Protocol version
+    # RakNet Protocol Version
     protocol_version: int = 10
-    # RakNet Packet ids
+    # RakNet Offline Message ID
+    magic: bytes = = b"\x00\xff\xff\x00\xfe\xfe\xfe\xfe\xfd\xfd\xfd\xfd\x12\x34\x56\x78"
+    # RakNet Packet IDs
     online_ping: int = 0x00
     offline_ping: int = 0x01
     offline_ping_open_connections: int = 0x02
