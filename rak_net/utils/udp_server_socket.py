@@ -32,8 +32,8 @@
 import socket
 
 class udp_server_socket:
-    def __init__(self, host: str, port: int, version: int = 4) -> None:
-        self.host: str = host
+    def __init__(self, hostname: str, port: int, version: int = 4) -> None:
+        self.hostname: str = hostname
         self.port: int = port
         self.version: int = version
         if version == 4:
@@ -46,7 +46,7 @@ class udp_server_socket:
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         try:
-            self.socket.bind((host, port))
+            self.socket.bind((hostname, port))
         except socket.error:
             raise Exception(f"Failed to bind to {str(port)}")
         self.socket.setblocking(False)
@@ -54,8 +54,8 @@ class udp_server_socket:
     def receive(self) -> tuple:
         return self.socket.recvfrom(65535)
       
-    def send(self, data: bytes, host: str, port: int) -> None:
-        self.socket.sendto(data, (host, port))
+    def send(self, data: bytes, hostname: str, port: int) -> None:
+        self.socket.sendto(data, (hostname, port))
         
     def close(self) -> None:
         self.socket.close()
