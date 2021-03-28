@@ -30,6 +30,7 @@
 ################################################################################
 
 from rak_net.utils.internet_address import internet_address
+from rak_net.udp_server_socket import udp_server_socket
 import random
 import sys
 
@@ -37,3 +38,4 @@ class server:
     def __init__(self, hostname: str, port: int, ipv: int = 4):
         self.address: object = internet_address(hostname, port, ipv)
         self.guid: int = random.randint(0, sys.maxsize)
+        self.socket = udp_server_socket(hostname, port, ipv)
