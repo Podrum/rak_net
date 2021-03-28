@@ -29,8 +29,12 @@
 #                                                                              #
 ################################################################################
 
+from rak_net.constant.protocol_info import protocol_info
+from rak_net.handler.offline_ping_handler import offline_ping_handler
+from rak_net.handler.open_connection_request_1_handler import open_connection_request_1_handler
+from rak_net.handler.open_connection_request_2_handler import open_connection_request_2_handler
 from rak_net.utils.internet_address import internet_address
-from rak_net.udp_server_socket import udp_server_socket
+from rak_net.utils.udp_server_socket import udp_server_socket
 import random
 import sys
 
@@ -40,3 +44,18 @@ class server:
         self.address: object = internet_address(hostname, port, ipv)
         self.guid: int = random.randint(0, sys.maxsize)
         self.socket: object = udp_server_socket(hostname, port, ipv)
+            
+    def sendData(self, data: bytes, address: object):
+        self.socket.send(data, address.hostname, address.port)
+
+    def handle(self):
+        recv = self.socket.receive()
+        if recv is not None:
+            address: object = internet_address(recv[1][0], recv[1][1])
+            print(hex(recv[0][0]))
+            if recv[0][0] == protocol_info.offline_ping:
+                self.sendData(offline_ping_handler.handle(recv[0], address, self), address)
+            elif recv[0][0] == protocol_info.open_connection_request_1:
+                self.sendData(open_connection_request_1_handler.handle(recv[0], address, self), address)
+            elif recv[0][0] == protocol_info.open_connection_request_2:
+                self.sendData(open_connection_request_2_handler.handle(recv[0], address, self), address)
