@@ -36,7 +36,7 @@ from rak_net.protocol.packet import packet
 class open_connection_reply_2(packet):
     def __init__(self, data: bytes = b"", pos: int = 0):
         super().__init__(data, pos)
-        self.packet_id = protocol_info.open_connection_reply_2
+        self.packet_id: int = protocol_info.open_connection_reply_2
   
     def decode_payload(self) -> None:
         self.magic: bytes = self.read(16)
