@@ -34,6 +34,7 @@ from rak_net.protocol.open_connection_reply_2 import open_connection_reply_2
 from rak_net.protocol.open_connection_request_2 import open_connection_request_2
 
 class open_connection_request_2_handler:
+    @staticmethod
     def handle(data: bytes, address: object, server: object) -> bytes:
         packet: object = open_connection_request_2(data)
         packet.decode()
