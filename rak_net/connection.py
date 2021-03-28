@@ -29,8 +29,27 @@
 #                                                                              #
 ################################################################################
 
+from rak_net.constant.protocol_info import protocol_info
+
 class connection:
     def __init__(self, address: object, mtu_size: int, server: object):
         self.address: object = address
         self.mtu_size: int = mtu_size
         self.server: object = server
+
+    def handle(self, data: bytes) -> None:
+        if data[0] == protocol_info.ack:
+            handle_ack(data)
+        elif data[0] == protocol_info.nack:
+            handle_nack(data)
+        elif protocol_info.frame_set_0 <= data[0] <= protocol_info.frame_set_f:
+            handle_frame_set(data)
+        
+    def handle_ack(self, data: bytes) -> None:
+        pass
+    
+    def handle_nack(self, data: bytes) -> None:
+        pass
+        
+    def handle_frame_set(self, data: bytes) -> None:
+        pass
