@@ -30,12 +30,28 @@
 ################################################################################
 
 from rak_net.constant.protocol_info import protocol_info
+from rak_net.protocol.ack import ack
+from rak_net.protocol.frame_set import frame_set
+from rak_net.protocol.nack import nack
 
 class connection:
     def __init__(self, address: object, mtu_size: int, server: object):
         self.address: object = address
         self.mtu_size: int = mtu_size
         self.server: object = server
+        self.connected: bool = False
+        self.recovery_queue: dict = {}
+        self.ack_queue: list = []
+        self.nack_queue: list = []
+        self.fragmented_packets: dict = {}
+        self.compound_id: int = 0
+        self.client_sequence_numbers: list = []
+        self.server_sequence_number: int = 0
+        self.client_sequence_number: int = 0
+        self.server_reliable_frame_index: int = 0
+        self.client_reliable_frame_index: int = 0
+        self.queue: object = frame_set()
+        self.channel_index: list = [0] * 32
 
     def handle(self, data: bytes) -> None:
         if data[0] == protocol_info.ack:
