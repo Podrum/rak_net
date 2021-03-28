@@ -37,7 +37,7 @@ class frame(binary_stream):
         super().__init__(data, pos)
         self.fragmented: bool = False
     
-    def read_data(self) -> None:
+    def decode(self) -> None:
         flags: int = self.read_unsigned_byte()
         self.reliability: int = (flags & 0xf4) >> 5
         self.fragmented: bool = (flags & 0x10) > 0
@@ -55,7 +55,7 @@ class frame(binary_stream):
             self.index: int = self.read_unsigned_int_be()
         self.body: bytes = self.read(body_length)
     
-    def write_data(self) -> None:
+    def encode(self) -> None:
         self.write_unsigned_byte(self.reliability | 0x10 if self.fragmented else self.reliability)
         self.write_unsigned_short_be(len(self.body) << 3)
         if reliability_tool.reliable(self.reliability):
