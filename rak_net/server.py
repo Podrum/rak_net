@@ -66,7 +66,9 @@ class server:
         if recv is not None:
             address: object = internet_address(recv[1][0], recv[1][1])
             print(hex(recv[0][0]))
-            if recv[0][0] == protocol_info.offline_ping:
+            if address.token in self.connections:
+                pass
+            elif recv[0][0] == protocol_info.offline_ping:
                 self.sendData(offline_ping_handler.handle(recv[0], address, self), address)
             elif recv[0][0] == protocol_info.open_connection_request_1:
                 self.sendData(open_connection_request_1_handler.handle(recv[0], address, self), address)
