@@ -34,6 +34,7 @@ from rak_net.protocol.online_pong import online_pong
 import time
 
 class online_ping_handler:
+    @staticmethod
     def handle(data: bytes, address: object, server: object) -> bytes:
         packet: object = online_ping(data)
         packet.decode()
