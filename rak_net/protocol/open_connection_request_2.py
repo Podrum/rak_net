@@ -37,13 +37,13 @@ class open_connection_request_2(packet):
         super().__init__(data, pos)
         self.packet_id = protocol_info.open_connection_request_2
   
-    def decode(self) -> None:
+    def decode_payload(self) -> None:
         self.magic: bytes = self.read(16)
         self.server_address: object = self.read_address()
         self.mtu_size: int = self.read_unsigned_short_be()
         self.client_guid: int = self.read_unsigned_long_be()
         
-    def encode(self) -> None:
+    def encode_payload(self) -> None:
         self.write(self.magic)
         self.write_address(self.server_address)
         self.write_unsigned_short_be(self.mtu_size)
