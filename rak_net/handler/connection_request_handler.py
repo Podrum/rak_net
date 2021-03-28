@@ -35,6 +35,7 @@ from rak_net.utils.internet_address import internet_address
 import time
 
 class connection_request_handler:
+    @staticmethod
     def handle(data: bytes, address: object, server: object) -> bytes:
         packet: object = connection_request(data)
         packet.decode()
