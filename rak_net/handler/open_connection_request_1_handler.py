@@ -42,9 +42,8 @@ class open_connection_request_1_handler:
             new_packet: object = open_connection_reply_1()
             new_packet.magic: bytes = protocol_info.magic
             new_packet.server_guid: int = server.guid
-            new_packet.client_address: object = address
+            new_packet.use_security: bool = False
             new_packet.mtu_size: int = packet.mtu_size
-            new_packet.use_encryption: bool = False
         else:
             new_packet: object = incompatible_protocol_version()
             new_packet.protocol_version: int = protocol_info.protocol_version
