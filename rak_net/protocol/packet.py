@@ -29,7 +29,10 @@
 #                                                                              #
 ################################################################################
 
-class packet:
+from binary_utils.binary_stream import binary_stream
+import socket
+
+class packet(binary_stream):
     def decode_header(self) -> None:
         self.pos += 1
       
