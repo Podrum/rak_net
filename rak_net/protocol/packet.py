@@ -47,3 +47,42 @@ class packet(binary_stream):
     def encode(self) -> None:
         self.encode_header()
         self.encode_payload()
+        
+    def read_address(self) -> object:
+        version: int = self.read_unsigned_byte()
+        if version == 4:
+            hostname_parts: list = []
+            for i in range(0, 4):
+                hostname_parts.append(str(~self.read_unsigned_byte() & 0xff))
+            hostname: str = ".".join(hostname_parts)
+            port: int = self.read_unsigned_short_be()
+            return internet_address(hostname, port, version)
+        if version == 6:
+            self.read_unsigned_short_le() # Domain
+            port: int = self.read_unsigned_short_be()
+            self.read_unsigned_int_be() # Test out IPV4 (Family)
+            hostname: str = socket.inet_ntop(socket.AF_INET6, self.read(16))
+            self.read_unsigned_int_be() # Test out IPV6 (Family)
+            return internet_address(hostname, port, version)
+      
+    def write_address(self, address: object) -> None:
+        if address.version == 4:
+            self.write_unsigned_byte(address.version)
+            hostname_parts: list = address.hostname.split(".")
+            for part in hostname_parts:
+                self.write_unsigned_byte(~int(part) & 0xff)
+            self.write_unsigned_short_be(address.port)
+        elif address.version == 6:
+            self.write_unsigned_byte(address.version)
+            self.write_unsigned_short_le(socket.AF_INET6) # Domain
+            self.write_unsigned_short_be(address.port)
+            self.write_unsigned_int_be(0) # Test out IPV4 (Family)
+            self.write(socket.inet_pton(socket.AF_INET6, address.hostname))
+            self.write_unsigned_int_be(0) # Test out IPV6 (Family)
+            
+    def read_string(self) -> str:
+        return self.read(self.read_unsigned_short_be()).decode()
+    
+    def write_string(self, value: str) -> None:
+        self.write_unsigned_short_be(len(value))
+        self.write(value.encode())
