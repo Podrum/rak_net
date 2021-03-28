@@ -55,13 +55,13 @@ class udp_server_socket:
         try:
             return self.socket.recvfrom(65535)
         except Exception:
-            return None
+            return
       
     def send(self, data: bytes, hostname: str, port: int) -> None:
         try:
             self.socket.sendto(data, (hostname, port))
         except Exception:
-            return None
+            return
         
     def close(self) -> None:
         self.socket.close()
