@@ -30,6 +30,7 @@
 ################################################################################
 
 from binary_utils.binary_stream import binary_stream
+from rak_net.utils.internet_address import internet_address
 import socket
 
 class packet(binary_stream):
