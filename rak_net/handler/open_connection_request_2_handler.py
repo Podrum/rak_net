@@ -30,7 +30,6 @@
 ################################################################################
 
 from rak_net.constant.protocol_info import protocol_info
-from rak_net.protocol.incompatible_protocol_version import incompatible_protocol_version
 from rak_net.protocol.open_connection_reply_2 import open_connection_reply_2
 from rak_net.protocol.open_connection_request_2 import open_connection_request_2
 
