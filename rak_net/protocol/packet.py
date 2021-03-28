@@ -39,14 +39,16 @@ class packet(binary_stream):
       
     def decode(self) -> None:
         self.decode_header()
-        self.decode_payload()
+        if hasattr(self, "decode_payload"):
+            self.decode_payload()
         
     def encode_header(self) -> None:
         self.write_unsigned_byte(self.packet_id)
       
     def encode(self) -> None:
         self.encode_header()
-        self.encode_payload()
+        if hasattr(self, "encode_payload"):
+            self.encode_payload()
         
     def read_address(self) -> object:
         version: int = self.read_unsigned_byte()
