@@ -34,6 +34,7 @@ from rak_net.protocol.offline_ping import offline_ping
 from rak_net.protocol.offline_pong import offline_pong
 
 class offline_ping_handler:
+    @staticmethod
     def handle(data: bytes, address: object, server: object) -> bytes:
         packet: object = offline_ping(data)
         packet.decode()
