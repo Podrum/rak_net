@@ -30,6 +30,9 @@
 ################################################################################
 
 class protocol_info:
+    # RakNet Protocol version
+    protocol_version: int = 10
+    # RakNet Packet ids
     online_ping: int = 0x00
     offline_ping: int = 0x01
     offline_ping_open_connections: int = 0x02
