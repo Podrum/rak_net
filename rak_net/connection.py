@@ -52,6 +52,9 @@ class connection:
         self.client_reliable_frame_index: int = 0
         self.queue: object = frame_set()
         self.channel_index: list = [0] * 32
+            
+    def send_data(self, data: bytes) -> None:
+        self.server.send_data(data, self.address)
 
     def handle(self, data: bytes) -> None:
         if data[0] == protocol_info.ack:
@@ -62,10 +65,23 @@ class connection:
             handle_frame_set(data)
         
     def handle_ack(self, data: bytes) -> None:
-        pass
+        packet: object = ack(data)
+        packet.decode()
+        for sequence_number in packet.sequence_numbers:
+            if sequence_number in self.recovery_queue:
+                del self.recovery_queue[sequence_number]
     
     def handle_nack(self, data: bytes) -> None:
-        pass
+        packet: object = nack(data)
+        packet.decode()
+        for sequence_number in packet.sequence_numbers:
+            if sequence_number in self.recovery_queue:
+                lost_packet: object = connection.recovery_queue[sequence_number]
+                lost_packet.sequence_number: int = self.server_sequence_number
+                self.server_sequence_number += 1
+                lost_packet.encode()
+                self.send_data(lost_packet.data)
+                del self.recovery_queue[sequence_number]
         
     def handle_frame_set(self, data: bytes) -> None:
         pass
