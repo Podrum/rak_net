@@ -29,6 +29,7 @@
 #                                                                              #
 ################################################################################
 
+from binary_utils.binary_stream import binary_stream
 from rak_net.constant.protocol_info import protocol_info
 from rak_net.protocol.packet import packet
 
@@ -49,7 +50,7 @@ class acknowledgement(packet):
         
     def encode_payload(self) -> None:
         self.sequence_numbers.sort()
-        temp_buffer: object = raknet_binary_stream()
+        temp_buffer: object = binary_stream()
         count: int = 0
         if len(self.sequence_numbers) > 0:
             start_index: int = self.sequence_numbers[0]
