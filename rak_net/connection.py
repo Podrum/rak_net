@@ -33,6 +33,7 @@ from rak_net.constant.protocol_info import protocol_info
 from rak_net.protocol.ack import ack
 from rak_net.protocol.frame_set import frame_set
 from rak_net.protocol.nack import nack
+from rak_net.utils.reliability_tool import reliability_tool
 
 class connection:
     def __init__(self, address: object, mtu_size: int, server: object):
@@ -84,4 +85,27 @@ class connection:
                 del self.recovery_queue[sequence_number]
         
     def handle_frame_set(self, data: bytes) -> None:
+        packet: object = frame_set(data)
+        packet.decode()
+        if packet.sequence_number not in self.client_sequence_numbers:
+            if packet.sequence_number in self.nack_queue:
+                self.nack_queue.remove(packet.sequence_number)
+            self.client_sequence_numbers.append(packet.sequence_number)
+            self.ack_queue.append(packet.sequence_number)
+            hole_size: int = packet.sequence_number - self.client_sequence_number
+            if hole_size > 0:
+                for sequence_number in range(self.client_sequence_number + 1, hole_size):
+                    if sequence_number not in self.client_sequence_numbers:
+                        self.nack_queue.append(sequence_number)
+            self.client_sequence_number: int = packet.sequence_number
+            for frame_1 in packet.frames:
+                if not reliability_tool.reliable(frame_1.reliability):
+                    self.handle_frame(frame_1)
+                else:
+                    hole_size: int = frame_1.reliable_frame_index - self.client_reliable_frame_index
+                    if hole_size == 0:
+                        self.handle_frame(frame_1)
+                        self.client_reliable_frame_index += 1
+                        
+    def handle_frame(data: bytes) -> None:
         pass
