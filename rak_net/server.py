@@ -65,7 +65,6 @@ class server:
         recv = self.socket.receive()
         if recv is not None:
             address: object = internet_address(recv[1][0], recv[1][1])
-            print(hex(recv[0][0]))
             if address.token in self.connections:
                 self.get_connection(address).handle(recv[0])
             elif recv[0][0] == protocol_info.offline_ping:
