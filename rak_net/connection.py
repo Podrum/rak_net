@@ -113,6 +113,15 @@ class connection:
     def handle_frame(self, packet: object) -> None:
         print("Received Frame -> " + hex(packet.body[0]))
         
+    def send_queue(self) -> None:
+        if len(self.queue.frames) > 0:
+            self.queue.sequence_number: int = self.server_sequence_number
+            self.server_sequence_number += 1
+            self.recovery_queue[self.queue.sequence_number]: object = self.queue
+            self.queue.encode()
+            self.send_data(self.queue.data)
+            connection.queue = frame_set()
+        
     def send_ack_queue(self) -> None:
         if len(self.ack_queue) > 0:
             packet: object = ack()
