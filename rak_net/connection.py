@@ -110,10 +110,23 @@ class connection:
                         self.handle_frame(frame_1)
                         self.client_reliable_frame_index += 1
                         
+    def handle_fragmented_frame(self, packet: object) -> None:
+        if packet.compound_id not in self.fragmented_packets:
+            self.fragmented_packets[packet.compound_id]: dict = {packet.index: packet}
+        else:
+            self.fragmented_packets[packet.compound_id][packet.index]: int = packet
+        if len(self.fragmented_packets[packet.compound_id]) == packet.compound_size:
+            new_frame: object = frame()
+            new_frame.body: bytes = b""
+            for i in range(0, packet.compound_size):
+                new_frame.body += self.fragmented_packets[packet.compound_id][i].body
+            del self.fragmented_packets[packet.compound_id]
+            self.handle_frame(new_frame)
+                        
     def handle_frame(self, packet: object) -> None:
         print("Received Frame -> " + hex(packet.body[0]))
         if packet.fragmented:
-            pass # [T O D O] self.handle_fragmented_frame(packet)
+            self.handle_fragmented_frame(packet)
         else:
             if not self.connected:
                 if packet.body[0] == protocol_info.connection_request:
