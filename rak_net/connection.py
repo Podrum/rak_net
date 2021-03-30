@@ -112,3 +112,19 @@ class connection:
                         
     def handle_frame(self, packet: object) -> None:
         print("Received Frame -> " + hex(packet.body[0]))
+        
+    def send_ack_queue(self) -> None:
+        if len(self.ack_queue) > 0:
+            packet: object = ack()
+            packet.sequence_numbers: list = self.ack_queue
+            self.ack_queue: list = []
+            packet.encode()
+            self.send_data(packet.data)
+                
+    def send_nack_queue(self) -> None:
+        if len(self.nack_queue) > 0:
+            packet: object = nack()
+            packet.sequence_numbers: list = self.nack_queue
+            self.nack_queue: list = []
+            packet.encode()
+            self.send_data(packet.data)
