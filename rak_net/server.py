@@ -74,3 +74,6 @@ class server:
                 self.send_data(open_connection_request_1_handler.handle(recv[0], address, self), address)
             elif recv[0][0] == protocol_info.open_connection_request_2:
                 self.send_data(open_connection_request_2_handler.handle(recv[0], address, self), address)
+        for connection in dict(self.connections).values():
+            connection.send_ack_queue()
+            connection.send_nack_queue()
