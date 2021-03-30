@@ -77,3 +77,4 @@ class server:
         for connection in dict(self.connections).values():
             connection.send_ack_queue()
             connection.send_nack_queue()
+            connection.send_queue()
