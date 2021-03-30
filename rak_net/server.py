@@ -47,14 +47,14 @@ class server:
         self.socket: object = udp_server_socket(hostname, port, ipv)
         self.connections: dict = {}
             
-    def add_connection(address: object, mtu_size: int) -> None:
+    def add_connection(self, address: object, mtu_size: int) -> None:
         self.connections[address.token] = connection(address, mtu_size, self)
         
-    def remove_connection(address: object) -> None:
+    def remove_connection(self, address: object) -> None:
         if address.token in self.connections:
             del self.connections[address.token]
             
-    def get_connection(address: object) -> object:
+    def get_connection(self, address: object) -> object:
         if address.token in self.connections:
             return self.connections[address.token]
             
@@ -67,7 +67,7 @@ class server:
             address: object = internet_address(recv[1][0], recv[1][1])
             print(hex(recv[0][0]))
             if address.token in self.connections:
-                pass
+                self.get_connection(address).handle(recv[0])
             elif recv[0][0] == protocol_info.offline_ping:
                 self.send_data(offline_ping_handler.handle(recv[0], address, self), address)
             elif recv[0][0] == protocol_info.open_connection_request_1:
