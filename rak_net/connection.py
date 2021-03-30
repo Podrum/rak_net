@@ -124,7 +124,6 @@ class connection:
             self.handle_frame(new_frame)
                         
     def handle_frame(self, packet: object) -> None:
-        print("Received Frame -> " + hex(packet.body[0]))
         if packet.fragmented:
             self.handle_fragmented_frame(packet)
         else:
