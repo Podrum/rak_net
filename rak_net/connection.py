@@ -107,5 +107,5 @@ class connection:
                         self.handle_frame(frame_1)
                         self.client_reliable_frame_index += 1
                         
-    def handle_frame(self, data: bytes) -> None:
-        print("Received Frame -> " + hex(data[0]))
+    def handle_frame(self, packet: object) -> None:
+        print("Received Frame -> " + hex(packet.body[0]))
