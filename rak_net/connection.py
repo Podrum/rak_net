@@ -108,4 +108,4 @@ class connection:
                         self.client_reliable_frame_index += 1
                         
     def handle_frame(data: bytes) -> None:
-        pass
+        print("Received Frame -> " + hex(data[0]))
