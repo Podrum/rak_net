@@ -129,7 +129,7 @@ class connection:
                 new_frame.body = online_ping_handler.handle(packet.body, self.address, self.server)
                 self.add_to_queue(new_frame, False)
             elif packet.body[0] == protocol_info.disconnect:
-                pass # [T O D O] self.disconnect()
+                self.disconnect()
             else:
                 pass # [T O D O] Custom Handler
         
@@ -201,3 +201,10 @@ class connection:
             self.nack_queue: list = []
             packet.encode()
             self.send_data(packet.data)
+            
+    def disconnect(self):
+        new_frame = frame()
+        new_frame.reliability = 0
+        new_frame.body = b"\x15"
+        self.add_to_queue(new_frame)
+        self.server.remove_connection(self.address)
