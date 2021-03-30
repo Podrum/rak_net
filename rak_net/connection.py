@@ -37,6 +37,7 @@ from rak_net.protocol.frame import frame
 from rak_net.protocol.frame_set import frame_set
 from rak_net.protocol.nack import nack
 from rak_net.utils.reliability_tool import reliability_tool
+import time
 
 class connection:
     def __init__(self, address: object, mtu_size: int, server: object):
@@ -56,6 +57,14 @@ class connection:
         self.client_reliable_frame_index: int = 0
         self.queue: object = frame_set()
         self.channel_index: list = [0] * 32
+    
+    def update(self):
+        if hasattr(self, "send_time"):
+            if time.time() - self.send_time == 1000:
+                print("Timed Out!")
+        self.send_ack_queue()
+        self.send_nack_queue()
+        self.send_queue()
             
     def send_data(self, data: bytes) -> None:
         self.server.send_data(data, self.address)
@@ -85,6 +94,7 @@ class connection:
                 self.server_sequence_number += 1
                 lost_packet.encode()
                 self.send_data(lost_packet.data)
+                self.send_time = time.time()
                 del self.recovery_queue[sequence_number]
         
     def handle_frame_set(self, data: bytes) -> None:
@@ -152,6 +162,7 @@ class connection:
             self.recovery_queue[self.queue.sequence_number]: object = self.queue
             self.queue.encode()
             self.send_data(self.queue.data)
+            self.send_time = time.time()
             self.queue = frame_set()
             
     def add_to_queue(self, packet: object, is_imediate: bool = True) -> None:
