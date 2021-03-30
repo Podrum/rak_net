@@ -47,18 +47,18 @@ class server:
         self.socket: object = udp_server_socket(hostname, port, ipv)
         self.connections: dict = {}
             
-    def addConnection(address: object, mtu_size: int) -> None:
+    def add_connection(address: object, mtu_size: int) -> None:
         self.connections[address.token] = connection(address, mtu_size, self)
         
-    def removeConnection(address: object) -> None:
+    def remove_connection(address: object) -> None:
         if address.token in self.connections:
             del self.connections[address.token]
             
-    def getConnection(address: object) -> object:
+    def get_connection(address: object) -> object:
         if address.token in self.connections:
             return self.connections[address.token]
             
-    def sendData(self, data: bytes, address: object) -> None:
+    def send_data(self, data: bytes, address: object) -> None:
         self.socket.send(data, address.hostname, address.port)
 
     def handle(self) -> None:
@@ -69,8 +69,8 @@ class server:
             if address.token in self.connections:
                 pass
             elif recv[0][0] == protocol_info.offline_ping:
-                self.sendData(offline_ping_handler.handle(recv[0], address, self), address)
+                self.send_data(offline_ping_handler.handle(recv[0], address, self), address)
             elif recv[0][0] == protocol_info.open_connection_request_1:
-                self.sendData(open_connection_request_1_handler.handle(recv[0], address, self), address)
+                self.send_data(open_connection_request_1_handler.handle(recv[0], address, self), address)
             elif recv[0][0] == protocol_info.open_connection_request_2:
-                self.sendData(open_connection_request_2_handler.handle(recv[0], address, self), address)
+                self.send_data(open_connection_request_2_handler.handle(recv[0], address, self), address)
