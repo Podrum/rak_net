@@ -112,6 +112,26 @@ class connection:
                         
     def handle_frame(self, packet: object) -> None:
         print("Received Frame -> " + hex(packet.body[0]))
+        if packet.fragmented:
+            pass # [T O D O] self.handle_fragmented_frame(packet)
+        else:
+            if not self.connected:
+                if packet.body[0] == protocol_info.connection_request:
+                    new_frame = frame()
+                    new_frame.reliability = 0
+                    new_frame.body = connection_request_handler.handle(packet.body, self.address, self.server)
+                    self.add_to_queue(new_frame)
+                elif packet.body[0] == protocol_info.new_incoming_connection:
+                    self.connected: bool = True
+            elif packet.body[0] == protocol_info.online_ping:
+                new_frame = frame()
+                new_frame.reliability = 0
+                new_frame.body = online_ping_handler.handle(packet.body, self.address, self.server)
+                self.add_to_queue(new_frame, False)
+            elif packet.body[0] == protocol_info.disconnect:
+                pass # [T O D O] self.disconnect()
+            else:
+                pass # [T O D O] Custom Handler
         
     def send_queue(self) -> None:
         if len(self.queue.frames) > 0:
