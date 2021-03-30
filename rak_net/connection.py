@@ -80,7 +80,7 @@ class connection:
         packet.decode()
         for sequence_number in packet.sequence_numbers:
             if sequence_number in self.recovery_queue:
-                lost_packet: object = connection.recovery_queue[sequence_number]
+                lost_packet: object = self.recovery_queue[sequence_number]
                 lost_packet.sequence_number: int = self.server_sequence_number
                 self.server_sequence_number += 1
                 lost_packet.encode()
@@ -120,7 +120,7 @@ class connection:
             self.recovery_queue[self.queue.sequence_number]: object = self.queue
             self.queue.encode()
             self.send_data(self.queue.data)
-            connection.queue = frame_set()
+            self.queue = frame_set()
             
     def add_to_queue(self, packet: object, is_imediate: bool = True) -> None:
         if reliability_tool.reliable(packet.reliability):
