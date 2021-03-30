@@ -45,5 +45,5 @@ class open_connection_request_2_handler:
         new_packet.mtu_size: int = packet.mtu_size
         new_packet.use_encryption: bool = False
         new_packet.encode()
-        server.addConnection(address, packet.mtu_size)
+        server.add_connection(address, packet.mtu_size)
         return new_packet.data
