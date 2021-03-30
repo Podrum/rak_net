@@ -59,11 +59,11 @@ class connection:
 
     def handle(self, data: bytes) -> None:
         if data[0] == protocol_info.ack:
-            handle_ack(data)
+            self.handle_ack(data)
         elif data[0] == protocol_info.nack:
-            handle_nack(data)
+            self.handle_nack(data)
         elif protocol_info.frame_set_0 <= data[0] <= protocol_info.frame_set_f:
-            handle_frame_set(data)
+            self.handle_frame_set(data)
         
     def handle_ack(self, data: bytes) -> None:
         packet: object = ack(data)
@@ -107,5 +107,5 @@ class connection:
                         self.handle_frame(frame_1)
                         self.client_reliable_frame_index += 1
                         
-    def handle_frame(data: bytes) -> None:
+    def handle_frame(self, data: bytes) -> None:
         print("Received Frame -> " + hex(data[0]))
