@@ -121,6 +121,50 @@ class connection:
             self.queue.encode()
             self.send_data(self.queue.data)
             connection.queue = frame_set()
+            
+    def add_to_queue(self, packet: object, is_imediate: bool = True) -> None:
+        if reliability_tool.reliable(packet.reliability):
+            packet.reliable_frame_index: int = self.server_reliable_frame_index
+            self.server_reliable_frame_index += 1
+            if packet.reliability == 3:
+                packet.ordered_frame_index: int = self.channel_index[packet.order_channel]
+                self.channel_index[packet.order_channel] += 1
+        if packet.get_size() > self.mtu_size:
+            fragmented_body = []
+            for i in range(0, len(packet.body), self.mtu_size):
+                fragmented_body.append(packet.body[i:i + self.mtu_size])
+            for index, body in enumerate(fragmented_body):
+                new_packet: object = frame()
+                new_packet.reliability: int = packet.reliability
+                new_packet.compound_id: int = self.compound_id
+                new_packet.compound_size: int = len(fragmented_data)
+                new_packet.index: int = index
+                new_packet.body: bytes = body
+                if index != 0:
+                    new_packet.reliable_frame_index: int = self.server_reliable_frame_index
+                    self.server_reliable_frame_index += 1
+                if new_packet.reliability == 3:
+                    new_packet.ordered_frame_index: int = packet.ordered_frame_index
+                    new_packet.order_channel: int = packet.order_channel
+                if is_imediate:
+                    self.queue.frames.append(new_packet)
+                    self.send_queue()
+                else:
+                    frame_size: int = new_packet.get_size()
+                    queue_size: int = self.queue.get_size()
+                    if frame_size + queue_size >= self.mtu_size:
+                        self.send_queue()
+                    self.queue.frames.append(new_packet)
+        else:
+            if is_imediate:
+                self.queue.frames.append(packet)
+                self.send_queue()
+            else:
+                frame_size: int = packet.get_size()
+                queue_size: int = self.queue.get_size()
+                if frame_size + queue_size >= self.mtu_size:
+                    self.send_queue()
+                self.queue.frames.append(packet)
         
     def send_ack_queue(self) -> None:
         if len(self.ack_queue) > 0:
