@@ -36,6 +36,7 @@ from rak_net.protocol.ack import ack
 from rak_net.protocol.frame import frame
 from rak_net.protocol.frame_set import frame_set
 from rak_net.protocol.nack import nack
+from rak_net.protocol.new_incoming_connection import new_incoming_connection
 from rak_net.utils.reliability_tool import reliability_tool
 
 class connection:
@@ -132,7 +133,6 @@ class connection:
         if packet.fragmented:
             self.handle_fragmented_frame(packet)
         else:
-            print(hex(packet.body[0]))
             if not self.connected:
                 if packet.body[0] == protocol_info.connection_request:
                     new_frame = frame()
@@ -140,7 +140,10 @@ class connection:
                     new_frame.body = connection_request_handler.handle(packet.body, self.address, self.server)
                     self.add_to_queue(new_frame)
                 elif packet.body[0] == protocol_info.new_incoming_connection:
-                    self.connected: bool = True
+                    packet_1: object = new_incoming_connection(packet.body)
+                    packet_1.decode()
+                    if packet_1.server_address.port == self.server.address.port:
+                        self.connected: bool = True
             elif packet.body[0] == protocol_info.online_ping:
                 new_frame = frame()
                 new_frame.reliability = 0
@@ -149,7 +152,8 @@ class connection:
             elif packet.body[0] == protocol_info.disconnect:
                 self.disconnect()
             else:
-                pass # [T O D O] Custom Handler
+                print(hex(packet.body[0]))
+                # [T O D O] Custom Handler
         
     def send_queue(self) -> None:
         if len(self.queue.frames) > 0:
