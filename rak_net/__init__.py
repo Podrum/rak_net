@@ -29,7 +29,10 @@
 #                                                                              #
 ################################################################################
 
-__all__ = ["connection", "server"]
+__all__: list = [
+    "connection",
+    "server"
+]
 
 from rak_net.connection import connection
 from rak_net.server import server
