@@ -51,4 +51,5 @@ __all__: list = [
     "packet"
 ]
 
-# from rak_net.protocol
+from rak_net.protocol.ack import ack
+from rak_net.protocol.acknowledgement import acknowledgement
