@@ -12,7 +12,7 @@ class interface:
     def on_new_incoming_connection(self, connection: object) -> None:
         print(f"{connection.address.token} successfully connected!")
         
-rak_server.interface: object = interface
+rak_server.interface: object = interface()
     
 while True:
     rak_server.handle()
