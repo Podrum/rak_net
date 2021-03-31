@@ -41,7 +41,7 @@ setuptools.setup(
     license = "MIT",
     description = "Podrum's RakNet library.",
     author = "Podrum",
-    url = "https://github.com/Podrum/binary_utils",
+    url = "https://github.com/Podrum/rak_net",
     keywords = ["raknet", "net", "rak", "python3"],
     classifiers = [
         "Development Status :: 5 - Production/Stable",
