@@ -29,6 +29,8 @@
 #                                                                              #
 ################################################################################
 
-__all__ = ["protocol_info"]
+__all__: list = [
+    "protocol_info"
+]
 
 from rak_net.constant.protocol_info import protocol_info
