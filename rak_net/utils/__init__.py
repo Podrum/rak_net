@@ -29,7 +29,11 @@
 #                                                                              #
 ################################################################################
 
-__all__ = ["internet_address", "reliability_tool", "udp_server_socket"]
+__all__: list = [
+    "internet_address",
+    "reliability_tool",
+    "udp_server_socket"
+]
 
 from rak_net.utils.internet_address import internet_address
 from rak_net.utils.reliability_tool import reliability_tool
