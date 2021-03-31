@@ -144,6 +144,9 @@ class connection:
                     packet_1.decode()
                     if packet_1.server_address.port == self.server.address.port:
                         self.connected: bool = True
+                        if hasattr(self.server, "interface"):
+                            if hasattr(self.server.interface, "on_new_incoming_connection"):
+                                self.server.interface.on_new_incoming_connection(self)
             elif packet.body[0] == protocol_info.online_ping:
                 new_frame = frame()
                 new_frame.reliability = 0
@@ -152,8 +155,9 @@ class connection:
             elif packet.body[0] == protocol_info.disconnect:
                 self.disconnect()
             else:
-                print(hex(packet.body[0]))
-                # [T O D O] Custom Handler
+                if hasattr(self.server, "interface"):
+                    if hasattr(self.server.interface, "on_frame"):
+                        self.server.interface.on_frame(packet, self)
         
     def send_queue(self) -> None:
         if len(self.queue.frames) > 0:
@@ -230,3 +234,6 @@ class connection:
         new_frame.body = b"\x15"
         self.add_to_queue(new_frame)
         self.server.remove_connection(self.address)
+        if hasattr(self.server, "interface"):
+            if hasattr(self.server.interface, "on_disconnect"):
+                self.server.interface.on_disconnect(self)
