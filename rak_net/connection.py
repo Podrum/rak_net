@@ -40,7 +40,7 @@ from rak_net.protocol.new_incoming_connection import new_incoming_connection
 from rak_net.utils.reliability_tool import reliability_tool
 
 class connection:
-    def __init__(self, address: object, mtu_size: int, server: object):
+    def __init__(self, address: object, mtu_size: int, server: object) -> None:
         self.address: object = address
         self.mtu_size: int = mtu_size
         self.server: object = server
@@ -228,7 +228,7 @@ class connection:
             packet.encode()
             self.send_data(packet.data)
             
-    def disconnect(self):
+    def disconnect(self) -> None:
         new_frame = frame()
         new_frame.reliability = 0
         new_frame.body = b"\x15"
