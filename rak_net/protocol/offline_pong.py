@@ -41,7 +41,7 @@ class offline_pong(packet):
         self.client_timestamp: int = self.read_unsigned_long_be()
         self.server_guid: int = self.read_unsigned_long_be()
         self.magic: bytes = self.read(16)
-        self.server_name = self.read_string()
+        self.server_name: str = self.read_string()
         
     def encode_payload(self) -> None:
         self.write_unsigned_long_be(self.client_timestamp)
