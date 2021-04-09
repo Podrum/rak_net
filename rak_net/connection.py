@@ -135,9 +135,9 @@ class connection:
         else:
             if not self.connected:
                 if packet.body[0] == protocol_info.connection_request:
-                    new_frame = frame()
-                    new_frame.reliability = 0
-                    new_frame.body = connection_request_handler.handle(packet.body, self.address, self.server)
+                    new_frame: object = frame()
+                    new_frame.reliability: int = 0
+                    new_frame.body: object = connection_request_handler.handle(packet.body, self.address, self.server)
                     self.add_to_queue(new_frame)
                 elif packet.body[0] == protocol_info.new_incoming_connection:
                     packet_1: object = new_incoming_connection(packet.body)
@@ -148,9 +148,9 @@ class connection:
                             if hasattr(self.server.interface, "on_new_incoming_connection"):
                                 self.server.interface.on_new_incoming_connection(self)
             elif packet.body[0] == protocol_info.online_ping:
-                new_frame = frame()
-                new_frame.reliability = 0
-                new_frame.body = online_ping_handler.handle(packet.body, self.address, self.server)
+                new_frame: object = frame()
+                new_frame.reliability: int = 0
+                new_frame.body: object = online_ping_handler.handle(packet.body, self.address, self.server)
                 self.add_to_queue(new_frame, False)
             elif packet.body[0] == protocol_info.disconnect:
                 self.disconnect()
@@ -176,7 +176,7 @@ class connection:
                 packet.ordered_frame_index: int = self.channel_index[packet.order_channel]
                 self.channel_index[packet.order_channel] += 1
         if packet.get_size() > self.mtu_size:
-            fragmented_body = []
+            fragmented_body: list = []
             for i in range(0, len(packet.body), self.mtu_size):
                 fragmented_body.append(packet.body[i:i + self.mtu_size])
             for index, body in enumerate(fragmented_body):
@@ -229,9 +229,9 @@ class connection:
             self.send_data(packet.data)
             
     def disconnect(self) -> None:
-        new_frame = frame()
-        new_frame.reliability = 0
-        new_frame.body = b"\x15"
+        new_frame: object = frame()
+        new_frame.reliability: int = 0
+        new_frame.body: bytes = b"\x15"
         self.add_to_queue(new_frame)
         self.server.remove_connection(self.address)
         if hasattr(self.server, "interface"):
