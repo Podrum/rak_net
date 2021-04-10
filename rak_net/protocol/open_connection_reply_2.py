@@ -33,7 +33,7 @@ from rak_net.constant.protocol_info import protocol_info
 from rak_net.protocol.packet import packet
 
 class open_connection_reply_2(packet):
-    def __init__(self, data: bytes = b"", pos: int = 0):
+    def __init__(self, data: bytes = b"", pos: int = 0) -> None:
         super().__init__(data, pos)
         self.packet_id: int = protocol_info.open_connection_reply_2
   
