@@ -183,7 +183,7 @@ class connection:
                 new_packet: object = frame()
                 new_packet.reliability: int = packet.reliability
                 new_packet.compound_id: int = self.compound_id
-                new_packet.compound_size: int = len(fragmented_data)
+                new_packet.compound_size: int = len(fragmented_body)
                 new_packet.index: int = index
                 new_packet.body: bytes = body
                 if index != 0:
