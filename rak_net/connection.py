@@ -137,7 +137,7 @@ class connection:
                 if packet.body[0] == protocol_info.connection_request:
                     new_frame: object = frame()
                     new_frame.reliability: int = 0
-                    new_frame.body: object = connection_request_handler.handle(packet.body, self.address, self.server)
+                    new_frame.body: bytes = connection_request_handler.handle(packet.body, self.address, self.server)
                     self.add_to_queue(new_frame)
                 elif packet.body[0] == protocol_info.new_incoming_connection:
                     packet_1: object = new_incoming_connection(packet.body)
@@ -150,7 +150,7 @@ class connection:
             elif packet.body[0] == protocol_info.online_ping:
                 new_frame: object = frame()
                 new_frame.reliability: int = 0
-                new_frame.body: object = online_ping_handler.handle(packet.body, self.address, self.server)
+                new_frame.body: bytes = online_ping_handler.handle(packet.body, self.address, self.server)
                 self.add_to_queue(new_frame, False)
             elif packet.body[0] == protocol_info.disconnect:
                 self.disconnect()
