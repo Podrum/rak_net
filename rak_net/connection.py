@@ -201,6 +201,7 @@ class connection:
                     if frame_size + queue_size >= self.mtu_size:
                         self.send_queue()
                     self.queue.frames.append(new_packet)
+            self.compound_id += 1
         else:
             if is_imediate:
                 self.queue.frames.append(packet)
