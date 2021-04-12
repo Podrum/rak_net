@@ -181,6 +181,7 @@ class connection:
                 fragmented_body.append(packet.body[i:i + self.mtu_size])
             for index, body in enumerate(fragmented_body):
                 new_packet: object = frame()
+                new_packet.fragmented: bool = True
                 new_packet.reliability: int = packet.reliability
                 new_packet.compound_id: int = self.compound_id
                 new_packet.compound_size: int = len(fragmented_body)
