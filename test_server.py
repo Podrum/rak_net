@@ -31,8 +31,9 @@
 
 from rak_net.server import server
 
-rak_server: object = server("MCPE;Dedicated Server;428;1.16.210;0;10;13253860892328930865;Bedrock level;Survival;1;19132;19133;", "0.0.0.0", 19132)
-
+rak_server: object = server(".".join(["0"] * 4), 19132)
+rak_server.name: str = "MCPE;Dedicated Server;428;1.16.210;0;10;13253860892328930865;Bedrock level;Survival;1;19132;19133;"
+    
 class interface:
     def on_frame(self, packet: object, connection: object) -> None:
         print(hex(packet.body[0]))
