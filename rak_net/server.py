@@ -40,8 +40,7 @@ import random
 import sys
 
 class server:
-    def __init__(self, name: str, hostname: str, port: int, ipv: int = 4) -> None:
-        self.name: str = name
+    def __init__(self, hostname: str, port: int, ipv: int = 4) -> None:
         self.address: object = internet_address(hostname, port, ipv)
         self.guid: int = random.randint(0, sys.maxsize)
         self.socket: object = udp_server_socket(hostname, port, ipv)
