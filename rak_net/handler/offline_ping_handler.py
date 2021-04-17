@@ -42,6 +42,6 @@ class offline_ping_handler:
         new_packet.client_timestamp: int = packet.client_timestamp
         new_packet.server_guid: int = server.guid
         new_packet.magic: bytes = protocol_info.magic
-        new_packet.server_name: str = server.name
+        new_packet.server_name: str = server.name if hasattr(server, "name") else ""
         new_packet.encode()
         return new_packet.data
