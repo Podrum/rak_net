@@ -108,13 +108,14 @@ class connection:
                         self.nack_queue.append(sequence_number)
             self.client_sequence_number: int = packet.sequence_number
             for frame_1 in packet.frames:
-                if not reliability_tool.reliable(frame_1.reliability):
-                    self.handle_frame(frame_1)
-                else:
-                    hole_size: int = frame_1.reliable_frame_index - self.client_reliable_frame_index
-                    if hole_size == 0:
-                        self.handle_frame(frame_1)
-                        self.client_reliable_frame_index += 1
+                self.handle_frame(frame_1)
+                # if not reliability_tool.reliable(frame_1.reliability):
+                #    self.handle_frame(frame_1)
+                # else:
+                #     hole_size: int = frame_1.reliable_frame_index - self.client_reliable_frame_index
+                #     if hole_size == 0:
+                #         self.handle_frame(frame_1)
+                #         self.client_reliable_frame_index += 1
                         
     def handle_fragmented_frame(self, packet: object) -> None:
         if packet.compound_id not in self.fragmented_packets:
