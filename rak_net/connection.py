@@ -61,6 +61,8 @@ class connection:
         self.last_receive_time: int = time()
     
     def update(self):
+        if (time() - self.last_receive_time: int = time()) >= 20000000:
+            self.disconnect()
         self.send_ack_queue()
         self.send_nack_queue()
         self.send_queue()
