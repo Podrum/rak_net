@@ -37,7 +37,7 @@ setuptools.setup(
     install_requires = [
         "binary-utils"
     ],
-    version = "1.8",
+    version = "1.9",
     license = "MIT",
     description = "Podrum's RakNet library.",
     author = "Podrum",
