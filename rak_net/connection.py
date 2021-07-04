@@ -38,6 +38,7 @@ from rak_net.protocol.frame_set import frame_set
 from rak_net.protocol.nack import nack
 from rak_net.protocol.new_incoming_connection import new_incoming_connection
 from rak_net.utils.reliability_tool import reliability_tool
+from time import time
 
 class connection:
     def __init__(self, address: object, mtu_size: int, server: object) -> None:
@@ -57,6 +58,7 @@ class connection:
         self.client_reliable_frame_index: int = 0
         self.queue: object = frame_set()
         self.channel_index: list = [0] * 32
+        self.last_receive_time: int = time()
     
     def update(self):
         self.send_ack_queue()
@@ -67,6 +69,7 @@ class connection:
         self.server.send_data(data, self.address)
 
     def handle(self, data: bytes) -> None:
+        self.last_receive_time: int = time()
         if data[0] == protocol_info.ack:
             self.handle_ack(data)
         elif data[0] == protocol_info.nack:
