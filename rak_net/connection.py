@@ -194,7 +194,6 @@ class connection:
                 new_packet.fragmented: bool = True
                 new_packet.reliability: int = packet.reliability
                 new_packet.compound_id: int = self.compound_id
-                self.compound_id += 1
                 new_packet.compound_size: int = len(fragmented_body)
                 new_packet.index: int = index
                 new_packet.body: bytes = body
@@ -214,6 +213,7 @@ class connection:
                     if frame_size + queue_size >= self.mtu_size:
                         self.send_queue()
                     self.queue.frames.append(new_packet)
+            self.compound_id += 1
         else:
             if is_imediate:
                 self.queue.frames.append(packet)
