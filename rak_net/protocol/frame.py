@@ -46,7 +46,7 @@ class frame(binary_stream):
             self.reliable_frame_index: int = self.read_unsigned_triad_le()
         if reliability_tool.sequenced(self.reliability):
             self.sequenced_frame_index: int = self.read_unsigned_triad_le()
-        if reliability_tool.ordered(self.reliability):
+        if reliability_tool.sequenced_or_ordered(self.reliability):
             self.ordered_frame_index: int = self.read_unsigned_triad_le()
             self.order_channel: int = self.read_unsigned_byte()
         if self.fragmented:
@@ -62,7 +62,7 @@ class frame(binary_stream):
             self.write_unsigned_triad_le(self.reliable_frame_index)
         if reliability_tool.sequenced(self.reliability):
             self.write_unsigned_triad_le(self.sequenced_frame_index)
-        if reliability_tool.ordered(self.reliability):
+        if reliability_tool.sequenced_or_ordered(self.reliability):
             self.write_unsigned_triad_le(self.ordered_frame_index)
             self.write_unsigned_byte(self.order_channel)
         if self.fragmented:
