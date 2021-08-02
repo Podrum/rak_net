@@ -174,10 +174,7 @@ class connection:
             self.send_data(self.queue.data)
             self.queue: object = frame_set()
             
-    def add_to_queue(self, packet: object, is_imediate: bool = True) -> None:
-        if reliability_tool.reliable(packet.reliability):
-            packet.reliable_frame_index: int = self.server_reliable_frame_index
-            self.server_reliable_frame_index += 1
+    def add_to_queue(self, packet: object) -> None:
         if reliability_tool.ordered(packet.reliability):
             packet.ordered_frame_index: int = self.server_order_channel_index[packet.order_channel]
             self.server_order_channel_index[packet.order_channel] += 1
@@ -198,32 +195,25 @@ class connection:
                 new_packet.index: int = index
                 new_packet.body: bytes = body
                 if reliability_tool.reliable(packet.reliability):
-                    new_packet.reliable_frame_index: int = packet.reliable_frame_index
+                    new_packet.reliable_frame_index: int = self.server_reliable_frame_index
+                    self.server_reliable_frame_index += 1
                 if reliability_tool.sequenced_or_ordered(packet.reliability):
                     new_packet.ordered_frame_index: int = packet.ordered_frame_index
                     new_packet.order_channel: int = packet.order_channel
                 if reliability_tool.sequenced(packet.reliability):
                     new_packet.sequenced_frame_index: int = packet.sequenced_frame_index
-                if is_imediate:
-                    self.queue.frames.append(new_packet)
-                    self.send_queue()
-                else:
-                    frame_size: int = new_packet.get_size()
-                    queue_size: int = self.queue.get_size()
-                    if frame_size + queue_size >= self.mtu_size:
-                        self.send_queue()
-                    self.queue.frames.append(new_packet)
+                self.queue.frames.append(new_packet)
+                self.send_queue()
             self.compound_id += 1
         else:
-            if is_imediate:
-                self.queue.frames.append(packet)
+            if reliability_tool.reliable(packet.reliability):
+                packet.reliable_frame_index: int = self.server_reliable_frame_index
+                self.server_reliable_frame_index += 1
+            frame_size: int = packet.get_size()
+            queue_size: int = self.queue.get_size()
+            if frame_size + queue_size >= self.mtu_size:
                 self.send_queue()
-            else:
-                frame_size: int = packet.get_size()
-                queue_size: int = self.queue.get_size()
-                if frame_size + queue_size >= self.mtu_size:
-                    self.send_queue()
-                self.queue.frames.append(packet)
+            self.queue.frames.append(packet)
         
     def send_ack_queue(self) -> None:
         if len(self.ack_queue) > 0:
