@@ -77,7 +77,7 @@ class frame(binary_stream):
             length += 3
         if reliability_tool.sequenced(self.reliability):
             length += 3
-        if reliability_tool.ordered(self.reliability):
+        if reliability_tool.sequenced_or_ordered(self.reliability):
             length += 4
         if self.fragmented:
             length += 10
