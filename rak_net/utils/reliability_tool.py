@@ -41,9 +41,15 @@ class reliability_tool:
         if reliability == 1 or reliability == 4:
             return True
         return False
-        
+    
     @staticmethod
     def ordered(reliability: int) -> bool:
+        if reliability == 3 or reliability == 7:
+            return True
+        return False
+        
+    @staticmethod
+    def sequenced_or_ordered(reliability: int) -> bool:
         if 1 <= reliability <= 4 and reliability != 2 or reliability == 7:
             return True
         return False
