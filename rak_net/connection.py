@@ -157,7 +157,7 @@ class connection:
                 new_frame: object = frame()
                 new_frame.reliability: int = 0
                 new_frame.body: bytes = online_ping_handler.handle(packet.body, self.address, self.server)
-                self.add_to_queue(new_frame, False)
+                self.add_to_queue(new_frame)
             elif packet.body[0] == protocol_info.disconnect:
                 self.disconnect()
             else:
