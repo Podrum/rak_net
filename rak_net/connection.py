@@ -57,7 +57,8 @@ class connection:
         self.server_reliable_frame_index: int = 0
         self.client_reliable_frame_index: int = 0
         self.queue: object = frame_set()
-        self.channel_index: list = [0] * 32
+        self.server_order_channel_index: list = [0] * 32
+        self.server_sequence_channel_index: list = [0] * 32
         self.last_receive_time: int = time()
     
     def update(self):
@@ -177,9 +178,13 @@ class connection:
         if reliability_tool.reliable(packet.reliability):
             packet.reliable_frame_index: int = self.server_reliable_frame_index
             self.server_reliable_frame_index += 1
-            if packet.reliability == 3:
-                packet.ordered_frame_index: int = self.channel_index[packet.order_channel]
-                self.channel_index[packet.order_channel] += 1
+        if reliability_tool.ordered(packet.reliability):
+            packet.ordered_frame_index: int = self.server_order_channel_index[packet.order_channel]
+            self.server_order_channel_index[packet.order_channel] += 1
+        elif reliability_tool.sequenced(packet.reliability):
+            packet.ordered_frame_index: int = self.server_order_channel_index[packet.order_channel]
+            packet.sequenced_frame_index: int = self.server_sequence_channel_index[packet.order_channel]
+            self.server_sequence_channel_index[packet.order_channel] += 1           
         if packet.get_size() > self.mtu_size:
             fragmented_body: list = []
             for i in range(0, len(packet.body), self.mtu_size):
@@ -189,15 +194,17 @@ class connection:
                 new_packet.fragmented: bool = True
                 new_packet.reliability: int = packet.reliability
                 new_packet.compound_id: int = self.compound_id
+                self.compound_id += 1
                 new_packet.compound_size: int = len(fragmented_body)
                 new_packet.index: int = index
                 new_packet.body: bytes = body
-                if index != 0:
-                    new_packet.reliable_frame_index: int = self.server_reliable_frame_index
-                    self.server_reliable_frame_index += 1
-                if new_packet.reliability == 3:
+                if reliability_tool.reliable(packet.reliability):
+                    new_packet.reliable_frame_index: int = packet.reliable_frame_index
+                if reliability_tool.sequenced_or_ordered(packet.reliability):
                     new_packet.ordered_frame_index: int = packet.ordered_frame_index
                     new_packet.order_channel: int = packet.order_channel
+                if reliability_tool.sequenced(packet.reliability):
+                    new_packet.sequenced_frame_index: int = packet.sequenced_frame_index
                 if is_imediate:
                     self.queue.frames.append(new_packet)
                     self.send_queue()
@@ -207,7 +214,6 @@ class connection:
                     if frame_size + queue_size >= self.mtu_size:
                         self.send_queue()
                     self.queue.frames.append(new_packet)
-            self.compound_id += 1
         else:
             if is_imediate:
                 self.queue.frames.append(packet)
