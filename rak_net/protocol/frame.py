@@ -56,7 +56,7 @@ class frame(binary_stream):
         self.body: bytes = self.read(body_length)
     
     def encode(self) -> None:
-        self.write_unsigned_byte((self.reliability << 5) | 0x10 if self.fragmented else self.reliability)
+        self.write_unsigned_byte((self.reliability << 5) | (0x10 if self.fragmented else 0))
         self.write_unsigned_short_be(len(self.body) << 3)
         if reliability_tool.reliable(self.reliability):
             self.write_unsigned_triad_le(self.reliable_frame_index)
