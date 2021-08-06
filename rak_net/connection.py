@@ -77,7 +77,7 @@ class connection:
             self.handle_ack(data)
         elif data[0] == protocol_info.nack:
             self.handle_nack(data)
-        elif protocol_info.frame_set_0 <= data[0] <= protocol_info.frame_set_f:
+        elif (data[0] & protocol_info.frame_set) != 0:
             self.handle_frame_set(data)
         
     def handle_ack(self, data: bytes) -> None:
