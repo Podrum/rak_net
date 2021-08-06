@@ -36,7 +36,7 @@ from rak_net.protocol.packet import packet
 class frame_set(packet):
     def __init__(self, data: bytes = b"", pos: int = 0):
         super().__init__(data, pos)
-        self.packet_id: int = protocol_info.frame_set_0
+        self.packet_id: int = protocol_info.frame_set
         self.frames: list = []
   
     def decode_payload(self) -> None:
