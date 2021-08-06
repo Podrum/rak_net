@@ -39,7 +39,7 @@ class open_connection_request_1_handler:
     def handle(data: bytes, address: object, server: object) -> bytes:
         packet: object = open_connection_request_1(data)
         packet.decode()
-        if packet.protocol_version == protocol_info.protocol_version:
+        if packet.protocol_version == server.protocol_version:
             new_packet: object = open_connection_reply_1()
             new_packet.magic: bytes = protocol_info.magic
             new_packet.server_guid: int = server.guid
