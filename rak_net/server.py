@@ -68,7 +68,7 @@ class Server:
             address: InternetAddress = InternetAddress(recv[1][0], recv[1][1])
             if address.token in self.connections:
                 self.get_connection(address).handle(recv[0])
-            elif recv[0][0] == ProtocolInfo.OFFLINE_PING:
+            elif recv[0][0] in [ProtocolInfo.OFFLINE_PING, ProtocolInfo.OFFLINE_PING_OPEN_CONNECTIONS]:
                 self.send_data(OfflinePingHandler.handle(recv[0], address, self), address)
             elif recv[0][0] == ProtocolInfo.OPEN_CONNECTION_REQUEST_1:
                 self.send_data(OpenConnectionRequest1Handler.handle(recv[0], address, self), address)
