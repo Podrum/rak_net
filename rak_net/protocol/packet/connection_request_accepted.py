@@ -29,6 +29,7 @@
 #                                                                              #
 ################################################################################
 
+from binary_utils.binary_stream import binary_stream
 from rak_net.protocol.packet.packet import Packet
 from rak_net.protocol.protocol_info import ProtocolInfo
 from rak_net.utils.internet_address import InternetAddress
@@ -48,8 +49,9 @@ class ConnectionRequestAccepted(Packet):
         self.client_address = self.read_address()
         self.system_index = self.read_unsigned_short_be()
         self.system_addresses.clear()
-        for i in range(0, 20):
-            self.system_addresses.append(self.read_address())
+        stream: binary_stream = binary_stream(self.read(len(self.data) - self.pos - 16))
+        while not stream.feos():
+            self.system_addresses.append(stream.read_address())
         self.request_timestamp = self.read_unsigned_long_be()
         self.accepted_timestamp = self.read_unsigned_long_be()
         
