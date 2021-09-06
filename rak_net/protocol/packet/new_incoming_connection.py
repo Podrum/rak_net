@@ -29,7 +29,6 @@
 #                                                                              #
 ################################################################################
 
-from binary_utils.binary_stream import binary_stream
 from rak_net.protocol.packet.packet import Packet
 from rak_net.protocol.protocol_info import ProtocolInfo
 from rak_net.utils.internet_address import InternetAddress
@@ -47,7 +46,7 @@ class NewIncomingConnection(Packet):
     def decode_payload(self) -> None:
         self.server_address = self.read_address()
         self.system_addresses.clear()
-        stream: binary_stream = binary_stream(self.read(len(self.data) - self.pos - 16))
+        stream: Packet = Packet(self.read(len(self.data) - self.pos - 16))
         while not stream.feos():
             self.system_addresses.append(stream.read_address())
         self.request_timestamp = self.read_unsigned_long_be()
