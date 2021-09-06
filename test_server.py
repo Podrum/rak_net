@@ -29,22 +29,24 @@
 #                                                                              #
 ################################################################################
 
-from rak_net.server import server
+from rak_net.connection import Connection
+from rak_net.protocol.packet.frame import Frame
+from rak_net.server import Server
 
-rak_server: object = server(".".join(["0"] * 4), 19132)
+rak_server: Server = Server(".".join(["0"] * 4), 19132)
 rak_server.name: str = "MCPE;Dedicated Server;428;1.16.210;0;10;13253860892328930865;Bedrock level;Survival;1;19132;19133;"
     
-class interface:
-    def on_frame(self, packet: object, connection: object) -> None:
-        print(hex(packet.body[0]))
+class Interface:
+    def on_frame(self, frame: Frame, connection: Connection) -> None:
+        print(hex(frame.body[0]))
         
-    def on_disconnect(self, connection: object) -> None:
+    def on_disconnect(self, connection: Connection) -> None:
         print(f"{connection.address.token} has disconnected.")
         
-    def on_new_incoming_connection(self, connection: object) -> None:
+    def on_new_incoming_connection(self, connection: Connection) -> None:
         print(f"{connection.address.token} successfully connected!")
         
-rak_server.interface: object = interface()
+rak_server.interface: Interface = Interface()
     
 while True:
     rak_server.handle()
