@@ -33,7 +33,7 @@ from rak_net.connection import Connection
 from rak_net.protocol.packet.frame import Frame
 from rak_net.server import Server
 
-rak_server: Server = Server(".".join(["0"] * 4), 19132)
+rak_server: Server = Server(10, ".".join(["0"] * 4), 19132)
 rak_server.name: str = "MCPE;Dedicated Server;428;1.16.210;0;10;13253860892328930865;Bedrock level;Survival;1;19132;19133;"
     
 class Interface:
