@@ -29,49 +29,50 @@
 #                                                                              #
 ################################################################################
 
-from rak_net.connection import connection
-from rak_net.constant.protocol_info import protocol_info
-from rak_net.handler.offline_ping_handler import offline_ping_handler
-from rak_net.handler.open_connection_request_1_handler import open_connection_request_1_handler
-from rak_net.handler.open_connection_request_2_handler import open_connection_request_2_handler
-from rak_net.utils.internet_address import internet_address
-from rak_net.utils.udp_server_socket import udp_server_socket
+from rak_net.connection import Connection
+from rak_net.protocol.handler.offline_ping_handler import OfflinePingHandler
+from rak_net.protocol.handler.open_connection_request_1_handler import OpenConnectionRequest1Handler
+from rak_net.protocol.handler.open_connection_request_2_handler import OpenConnectionRequest2Handler
+from rak_net.protocol.protocol_info import ProtocolInfo
+from rak_net.utils.internet_address import InternetAddress
+from rak_net.utils.udp_server_socket import UdpServerSocket
 import random
 import sys
 
-class server:
+
+class Server:
     def __init__(self, protocol_version: int, hostname: str, port: int, ipv: int = 4) -> None:
         self.protocol_version: int = protocol_version
-        self.address: object = internet_address(hostname, port, ipv)
+        self.address: InternetAddress = InternetAddress(hostname, port, ipv)
         self.guid: int = random.randint(0, sys.maxsize)
-        self.socket: object = udp_server_socket(hostname, port, ipv)
-        self.connections: dict = {}
+        self.socket: UdpServerSocket = UdpServerSocket(hostname, port, ipv)
+        self.connections: dict[(str, Connection)] = {}
             
-    def add_connection(self, address: object, mtu_size: int) -> None:
-        self.connections[address.token] = connection(address, mtu_size, self)
+    def add_connection(self, address: InternetAddress, mtu_size: int) -> None:
+        self.connections[address.token] = Connection(address, mtu_size, self)
         
-    def remove_connection(self, address: object) -> None:
+    def remove_connection(self, address: InternetAddress) -> None:
         if address.token in self.connections:
             del self.connections[address.token]
             
-    def get_connection(self, address: object) -> object:
+    def get_connection(self, address: InternetAddress) -> Connection:
         if address.token in self.connections:
             return self.connections[address.token]
             
-    def send_data(self, data: bytes, address: object) -> None:
+    def send_data(self, data: bytes, address: InternetAddress) -> None:
         self.socket.send(data, address.hostname, address.port)
 
     def handle(self) -> None:
-        recv = self.socket.receive()
-        if recv is not None:
-            address: object = internet_address(recv[1][0], recv[1][1])
+        recv: tuple = self.socket.receive()
+        if recv[0]:
+            address: InternetAddress = InternetAddress(recv[1][0], recv[1][1])
             if address.token in self.connections:
                 self.get_connection(address).handle(recv[0])
-            elif recv[0][0] == protocol_info.offline_ping:
-                self.send_data(offline_ping_handler.handle(recv[0], address, self), address)
-            elif recv[0][0] == protocol_info.open_connection_request_1:
-                self.send_data(open_connection_request_1_handler.handle(recv[0], address, self), address)
-            elif recv[0][0] == protocol_info.open_connection_request_2:
-                self.send_data(open_connection_request_2_handler.handle(recv[0], address, self), address)
+            elif recv[0][0] == ProtocolInfo.OFFLINE_PING:
+                self.send_data(OfflinePingHandler.handle(recv[0], address, self), address)
+            elif recv[0][0] == ProtocolInfo.OPEN_CONNECTION_REQUEST_1:
+                self.send_data(OpenConnectionRequest1Handler.handle(recv[0], address, self), address)
+            elif recv[0][0] == ProtocolInfo.OPEN_CONNECTION_REQUEST_2:
+                self.send_data(OpenConnectionRequest2Handler.handle(recv[0], address, self), address)
         for connection in dict(self.connections).values():
             connection.update()

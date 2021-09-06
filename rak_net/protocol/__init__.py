@@ -29,44 +29,8 @@
 #                                                                              #
 ################################################################################
 
-__all__: list = [
-    "ack",
-    "acknowledgement",
-    "connection_request",
-    "connection_request_accepted",
-    "disconnect",
-    "frame",
-    "frame_set",
-    "incompatible_protocol_version",
-    "nack",
-    "new_incoming_connection",
-    "offline_ping",
-    "offline_pong",
-    "online_ping",
-    "online_pong",
-    "open_connection_reply_1",
-    "open_connection_reply_2",
-    "open_connection_request_1",
-    "open_connection_request_2",
-    "packet"
-]
+from rak_net.protocol.protocol_info import ProtocolInfo
 
-from rak_net.protocol.ack import ack
-from rak_net.protocol.acknowledgement import acknowledgement
-from rak_net.protocol.connection_request import connection_request
-from rak_net.protocol.connection_request_accepted import connection_request_accepted
-from rak_net.protocol.disconnect import disconnect
-from rak_net.protocol.frame import frame
-from rak_net.protocol.frame_set import frame_set
-from rak_net.protocol.incompatible_protocol_version import incompatible_protocol_version
-from rak_net.protocol.nack import nack
-from rak_net.protocol.new_incoming_connection import new_incoming_connection
-from rak_net.protocol.offline_ping import offline_ping
-from rak_net.protocol.offline_pong import offline_pong
-from rak_net.protocol.online_ping import online_ping
-from rak_net.protocol.online_pong import online_pong
-from rak_net.protocol.open_connection_reply_1 import open_connection_reply_1
-from rak_net.protocol.open_connection_reply_2 import open_connection_reply_2
-from rak_net.protocol.open_connection_request_1 import open_connection_request_1
-from rak_net.protocol.open_connection_request_2 import open_connection_request_2
-from rak_net.protocol.packet import packet
+__all__: list[str] = [
+    "ProtocolInfo"
+]

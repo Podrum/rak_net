@@ -29,12 +29,12 @@
 #                                                                              #
 ################################################################################
 
-__all__: list = [
-    "internet_address",
-    "reliability_tool",
-    "udp_server_socket"
-]
+from rak_net.utils.internet_address import InternetAddress
+from rak_net.utils.reliability_tool import ReliabilityTool
+from rak_net.utils.udp_server_socket import UdpServerSocket
 
-from rak_net.utils.internet_address import internet_address
-from rak_net.utils.reliability_tool import reliability_tool
-from rak_net.utils.udp_server_socket import udp_server_socket
+__all__: list[str] = [
+    "InternetAddress",
+    "ReliabilityTool",
+    "UdpServerSocket"
+]

@@ -29,7 +29,7 @@
 #                                                                              #
 ################################################################################
 
-class internet_address:
+class InternetAddress:
     def __init__(self, hostname: str, port: int, version: int = 4) -> None:
         self.hostname: str = hostname
         self.port: int = port

@@ -29,7 +29,7 @@
 #                                                                              #
 ################################################################################
 
-class reliability_tool:
+class ReliabilityTool:
     @staticmethod
     def reliable(reliability: int) -> bool:
         if 2 <= reliability <= 7 and reliability != 5:

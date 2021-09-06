@@ -29,37 +29,39 @@
 #                                                                              #
 ################################################################################
 
-from rak_net.constant.protocol_info import protocol_info
-from rak_net.handler.online_ping_handler import online_ping_handler
-from rak_net.handler.connection_request_handler import connection_request_handler
-from rak_net.protocol.ack import ack
-from rak_net.protocol.frame import frame
-from rak_net.protocol.frame_set import frame_set
-from rak_net.protocol.nack import nack
-from rak_net.protocol.new_incoming_connection import new_incoming_connection
-from rak_net.utils.reliability_tool import reliability_tool
+from rak_net.protocol.handler.online_ping_handler import OnlinePingHandler
+from rak_net.protocol.handler.connection_request_handler import ConnectionRequestHandler
+from rak_net.protocol.packet.ack import Ack
+from rak_net.protocol.packet.frame import Frame
+from rak_net.protocol.packet.frame_set import FrameSet
+from rak_net.protocol.packet.nack import Nack
+from rak_net.protocol.packet.new_incoming_connection import NewIncomingConnection
+from rak_net.protocol.protocol_info import ProtocolInfo
+from rak_net.utils.internet_address import InternetAddress
+from rak_net.utils.reliability_tool import ReliabilityTool
 from time import time
 
-class connection:
-    def __init__(self, address: object, mtu_size: int, server: object) -> None:
-        self.address: object = address
+
+class Connection:
+    def __init__(self, address: InternetAddress, mtu_size: int, server) -> None:
+        self.address: InternetAddress = address
         self.mtu_size: int = mtu_size
-        self.server: object = server
+        self.server = server
         self.connected: bool = False
-        self.recovery_queue: dict = {}
-        self.ack_queue: list = []
-        self.nack_queue: list = []
-        self.fragmented_packets: dict = {}
+        self.recovery_queue: dict[(int, FrameSet)] = {}
+        self.ack_queue: list[int] = []
+        self.nack_queue: list[int] = []
+        self.fragmented_packets: dict[(int, (int, Frame))] = {}
         self.compound_id: int = 0
-        self.client_sequence_numbers: list = []
+        self.client_sequence_numbers: list[int] = []
         self.server_sequence_number: int = 0
         self.client_sequence_number: int = 0
         self.server_reliable_frame_index: int = 0
         self.client_reliable_frame_index: int = 0
-        self.queue: object = frame_set()
-        self.server_order_channel_index: list = [0] * 32
-        self.server_sequence_channel_index: list = [0] * 32
-        self.last_receive_time: int = time()
+        self.queue: FrameSet = FrameSet()
+        self.server_order_channel_index: list[int] = [0] * 32
+        self.server_sequence_channel_index: list[int] = [0] * 32
+        self.last_receive_time: float = time()
     
     def update(self):
         if (time() - self.last_receive_time) >= 10:
@@ -72,35 +74,35 @@ class connection:
         self.server.send_data(data, self.address)
 
     def handle(self, data: bytes) -> None:
-        self.last_receive_time: int = time()
-        if data[0] == protocol_info.ack:
+        self.last_receive_time = time()
+        if data[0] == ProtocolInfo.ACK:
             self.handle_ack(data)
-        elif data[0] == protocol_info.nack:
+        elif data[0] == ProtocolInfo.NACK:
             self.handle_nack(data)
-        elif (data[0] & protocol_info.frame_set) != 0:
+        elif (data[0] & ProtocolInfo.FRAME_SET) != 0:
             self.handle_frame_set(data)
         
     def handle_ack(self, data: bytes) -> None:
-        packet: object = ack(data)
+        packet: Ack = Ack(data)
         packet.decode()
         for sequence_number in packet.sequence_numbers:
             if sequence_number in self.recovery_queue:
                 del self.recovery_queue[sequence_number]
     
     def handle_nack(self, data: bytes) -> None:
-        packet: object = nack(data)
+        packet: Nack = Nack(data)
         packet.decode()
         for sequence_number in packet.sequence_numbers:
             if sequence_number in self.recovery_queue:
-                lost_packet: object = self.recovery_queue[sequence_number]
-                lost_packet.sequence_number: int = self.server_sequence_number
+                lost_packet: FrameSet = self.recovery_queue[sequence_number]
+                lost_packet.sequence_number = self.server_sequence_number
                 self.server_sequence_number += 1
                 lost_packet.encode()
                 self.send_data(lost_packet.data)
                 del self.recovery_queue[sequence_number]
         
     def handle_frame_set(self, data: bytes) -> None:
-        packet: object = frame_set(data)
+        packet: FrameSet = FrameSet(data)
         packet.decode()
         if packet.sequence_number not in self.client_sequence_numbers:
             if packet.sequence_number in self.nack_queue:
@@ -112,129 +114,129 @@ class connection:
                 for sequence_number in range(self.client_sequence_number + 1, hole_size):
                     if sequence_number not in self.client_sequence_numbers:
                         self.nack_queue.append(sequence_number)
-            self.client_sequence_number: int = packet.sequence_number
-            for frame_1 in packet.frames:
-                if not reliability_tool.reliable(frame_1.reliability):
-                   self.handle_frame(frame_1)
+            self.client_sequence_number = packet.sequence_number
+            for frame in packet.frames:
+                if not ReliabilityTool.reliable(frame.reliability):
+                    self.handle_frame(frame)
                 else:
-                    hole_size: int = frame_1.reliable_frame_index - self.client_reliable_frame_index
+                    hole_size: int = frame.reliable_frame_index - self.client_reliable_frame_index
                     if hole_size == 0:
-                        self.handle_frame(frame_1)
+                        self.handle_frame(frame)
                         self.client_reliable_frame_index += 1
                         
-    def handle_fragmented_frame(self, packet: object) -> None:
-        if packet.compound_id not in self.fragmented_packets:
-            self.fragmented_packets[packet.compound_id]: dict = {packet.index: packet}
+    def handle_fragmented_frame(self, frame: Frame) -> None:
+        if frame.compound_id not in self.fragmented_packets:
+            self.fragmented_packets[frame.compound_id] = {frame.index: frame}
         else:
-            self.fragmented_packets[packet.compound_id][packet.index]: int = packet
-        if len(self.fragmented_packets[packet.compound_id]) == packet.compound_size:
-            new_frame: object = frame()
-            new_frame.body: bytes = b""
-            for i in range(0, packet.compound_size):
-                new_frame.body += self.fragmented_packets[packet.compound_id][i].body
-            del self.fragmented_packets[packet.compound_id]
+            self.fragmented_packets[frame.compound_id][frame.index] = frame
+        if len(self.fragmented_packets[frame.compound_id]) == frame.compound_size:
+            new_frame: Frame = Frame()
+            new_frame.body = b""
+            for i in range(0, frame.compound_size):
+                new_frame.body += self.fragmented_packets[frame.compound_id][i].body
+            del self.fragmented_packets[frame.compound_id]
             self.handle_frame(new_frame)
                         
-    def handle_frame(self, packet: object) -> None:
-        if packet.fragmented:
-            self.handle_fragmented_frame(packet)
+    def handle_frame(self, frame: Frame) -> None:
+        if frame.fragmented:
+            self.handle_fragmented_frame(frame)
         else:
             if not self.connected:
-                if packet.body[0] == protocol_info.connection_request:
-                    new_frame: object = frame()
-                    new_frame.reliability: int = 0
-                    new_frame.body: bytes = connection_request_handler.handle(packet.body, self.address, self.server)
+                if frame.body[0] == ProtocolInfo.CONNECTION_REQUEST:
+                    new_frame: Frame = Frame()
+                    new_frame.reliability = 0
+                    new_frame.body = ConnectionRequestHandler.handle(frame.body, self.address, self.server)
                     self.add_to_queue(new_frame)
-                elif packet.body[0] == protocol_info.new_incoming_connection:
-                    packet_1: object = new_incoming_connection(packet.body)
-                    packet_1.decode()
-                    if packet_1.server_address.port == self.server.address.port:
-                        self.connected: bool = True
+                elif frame.body[0] == ProtocolInfo.NEW_INCOMING_CONNECTION:
+                    packet: NewIncomingConnection = NewIncomingConnection(frame.body)
+                    packet.decode()
+                    if packet.server_address.port == self.server.address.port:
+                        self.connected = True
                         if hasattr(self.server, "interface"):
                             if hasattr(self.server.interface, "on_new_incoming_connection"):
                                 self.server.interface.on_new_incoming_connection(self)
-            elif packet.body[0] == protocol_info.online_ping:
-                new_frame: object = frame()
-                new_frame.reliability: int = 0
-                new_frame.body: bytes = online_ping_handler.handle(packet.body, self.address, self.server)
+            elif frame.body[0] == ProtocolInfo.ONLINE_PING:
+                new_frame: Frame = Frame()
+                new_frame.reliability = 0
+                new_frame.body = OnlinePingHandler.handle(frame.body, self.address, self.server)
                 self.add_to_queue(new_frame)
-            elif packet.body[0] == protocol_info.disconnect:
+            elif frame.body[0] == ProtocolInfo.DISCONNECT:
                 self.disconnect()
             else:
                 if hasattr(self.server, "interface"):
                     if hasattr(self.server.interface, "on_frame"):
-                        self.server.interface.on_frame(packet, self)
+                        self.server.interface.on_frame(frame, self)
         
     def send_queue(self) -> None:
         if len(self.queue.frames) > 0:
-            self.queue.sequence_number: int = self.server_sequence_number
+            self.queue.sequence_number = self.server_sequence_number
             self.server_sequence_number += 1
-            self.recovery_queue[self.queue.sequence_number]: object = self.queue
+            self.recovery_queue[self.queue.sequence_number] = self.queue
             self.queue.encode()
             self.send_data(self.queue.data)
-            self.queue: object = frame_set()
+            self.queue = FrameSet()
             
-    def add_to_queue(self, packet: object) -> None:
-        if reliability_tool.ordered(packet.reliability):
-            packet.ordered_frame_index: int = self.server_order_channel_index[packet.order_channel]
-            self.server_order_channel_index[packet.order_channel] += 1
-        elif reliability_tool.sequenced(packet.reliability):
-            packet.ordered_frame_index: int = self.server_order_channel_index[packet.order_channel]
-            packet.sequenced_frame_index: int = self.server_sequence_channel_index[packet.order_channel]
-            self.server_sequence_channel_index[packet.order_channel] += 1           
-        if packet.get_size() > self.mtu_size:
-            fragmented_body: list = []
-            for i in range(0, len(packet.body), self.mtu_size):
-                fragmented_body.append(packet.body[i:i + self.mtu_size])
+    def add_to_queue(self, frame: Frame) -> None:
+        if ReliabilityTool.ordered(frame.reliability):
+            frame.ordered_frame_index = self.server_order_channel_index[frame.order_channel]
+            self.server_order_channel_index[frame.order_channel] += 1
+        elif ReliabilityTool.sequenced(frame.reliability):
+            frame.ordered_frame_index = self.server_order_channel_index[frame.order_channel]
+            frame.sequenced_frame_index = self.server_sequence_channel_index[frame.order_channel]
+            self.server_sequence_channel_index[frame.order_channel] += 1
+        if frame.get_size() > self.mtu_size:
+            fragmented_body: list[bytes] = []
+            for i in range(0, len(frame.body), self.mtu_size):
+                fragmented_body.append(frame.body[i:i + self.mtu_size])
             for index, body in enumerate(fragmented_body):
-                new_packet: object = frame()
-                new_packet.fragmented: bool = True
-                new_packet.reliability: int = packet.reliability
-                new_packet.compound_id: int = self.compound_id
-                new_packet.compound_size: int = len(fragmented_body)
-                new_packet.index: int = index
-                new_packet.body: bytes = body
-                if reliability_tool.reliable(packet.reliability):
-                    new_packet.reliable_frame_index: int = self.server_reliable_frame_index
+                new_frame: Frame = Frame()
+                new_frame.fragmented = True
+                new_frame.reliability = frame.reliability
+                new_frame.compound_id = self.compound_id
+                new_frame.compound_size = len(fragmented_body)
+                new_frame.index = index
+                new_frame.body = body
+                if ReliabilityTool.reliable(frame.reliability):
+                    new_frame.reliable_frame_index = self.server_reliable_frame_index
                     self.server_reliable_frame_index += 1
-                if reliability_tool.sequenced_or_ordered(packet.reliability):
-                    new_packet.ordered_frame_index: int = packet.ordered_frame_index
-                    new_packet.order_channel: int = packet.order_channel
-                if reliability_tool.sequenced(packet.reliability):
-                    new_packet.sequenced_frame_index: int = packet.sequenced_frame_index
-                self.queue.frames.append(new_packet)
+                if ReliabilityTool.sequenced_or_ordered(frame.reliability):
+                    new_frame.ordered_frame_index = frame.ordered_frame_index
+                    new_frame.order_channel = frame.order_channel
+                if ReliabilityTool.sequenced(frame.reliability):
+                    new_frame.sequenced_frame_index = frame.sequenced_frame_index
+                self.queue.frames.append(new_frame)
                 self.send_queue()
             self.compound_id += 1
         else:
-            if reliability_tool.reliable(packet.reliability):
-                packet.reliable_frame_index: int = self.server_reliable_frame_index
+            if ReliabilityTool.reliable(frame.reliability):
+                frame.reliable_frame_index = self.server_reliable_frame_index
                 self.server_reliable_frame_index += 1
-            frame_size: int = packet.get_size()
+            frame_size: int = frame.get_size()
             queue_size: int = self.queue.get_size()
             if frame_size + queue_size >= self.mtu_size:
                 self.send_queue()
-            self.queue.frames.append(packet)
+            self.queue.frames.append(frame)
         
     def send_ack_queue(self) -> None:
         if len(self.ack_queue) > 0:
-            packet: object = ack()
-            packet.sequence_numbers: list = self.ack_queue
-            self.ack_queue: list = []
+            packet: Ack = Ack()
+            packet.sequence_numbers = self.ack_queue
+            self.ack_queue.clear()
             packet.encode()
             self.send_data(packet.data)
                 
     def send_nack_queue(self) -> None:
         if len(self.nack_queue) > 0:
-            packet: object = nack()
-            packet.sequence_numbers: list = self.nack_queue
-            self.nack_queue: list = []
+            packet: Nack = Nack()
+            packet.sequence_numbers = self.nack_queue
+            self.nack_queue.clear()
             packet.encode()
             self.send_data(packet.data)
             
     def disconnect(self) -> None:
-        new_frame: object = frame()
-        new_frame.reliability: int = 0
-        new_frame.body: bytes = b"\x15"
+        new_frame: Frame = Frame()
+        new_frame.reliability = 0
+        new_frame.body = b"\x15"
         self.add_to_queue(new_frame)
         self.server.remove_connection(self.address)
         if hasattr(self.server, "interface"):

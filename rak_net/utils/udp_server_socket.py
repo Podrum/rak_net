@@ -31,15 +31,16 @@
 
 import socket
 
-class udp_server_socket:
+
+class UdpServerSocket:
     def __init__(self, hostname: str, port: int, version: int = 4) -> None:
         self.hostname: str = hostname
         self.port: int = port
         self.version: int = version
         if version == 4:
-            self.socket: object = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.SOL_UDP)
+            self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.SOL_UDP)
         elif version == 6:
-            self.socket: object = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM, socket.SOL_UDP)
+            self.socket: socket.socket = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM, socket.SOL_UDP)
             self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
         else:
             raise Exception(f"Unknown address version {version}")
@@ -54,13 +55,13 @@ class udp_server_socket:
     def receive(self) -> tuple:
         try:
             return self.socket.recvfrom(65535)
-        except Exception:
-            return
+        except socket.error:
+            return b"", ("", 0)
       
     def send(self, data: bytes, hostname: str, port: int) -> None:
         try:
             self.socket.sendto(data, (hostname, port))
-        except Exception:
+        except socket.error:
             return
         
     def close(self) -> None:
