@@ -39,7 +39,7 @@ class Acknowledgement(Packet):
         self.sequence_numbers: list[int] = []
 
     def decode_payload(self) -> None:
-        self.sequence_numbers = []
+        self.sequence_numbers.clear()
         count: int = self.read_unsigned_short_be()
         for i in range(0, count):
             single: bool = self.read_bool()
