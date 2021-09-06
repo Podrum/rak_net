@@ -221,16 +221,16 @@ class Connection:
         if len(self.ack_queue) > 0:
             packet: Ack = Ack()
             packet.sequence_numbers = self.ack_queue
-            self.ack_queue.clear()
             packet.encode()
+            self.ack_queue.clear()
             self.send_data(packet.data)
                 
     def send_nack_queue(self) -> None:
         if len(self.nack_queue) > 0:
             packet: Nack = Nack()
             packet.sequence_numbers = self.nack_queue
-            self.nack_queue.clear()
             packet.encode()
+            self.nack_queue.clear()
             self.send_data(packet.data)
             
     def disconnect(self) -> None:
