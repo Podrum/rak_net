@@ -53,14 +53,14 @@ class Connection:
         self.nack_queue: list[int] = []
         self.fragmented_packets: dict[(int, (int, Frame))] = {}
         self.compound_id: int = 0
-        self.client_sequence_numbers: list[int] = []
-        self.server_sequence_number: int = 0
-        self.client_sequence_number: int = 0
-        self.server_reliable_frame_index: int = 0
-        self.client_reliable_frame_index: int = 0
+        self.receive_sequence_numbers: list[int] = []
+        self.send_sequence_number: int = 0
+        self.receive_sequence_number: int = 0
+        self.send_reliable_frame_index: int = 0
+        self.receive_reliable_frame_index: int = 0
         self.queue: FrameSet = FrameSet()
-        self.server_order_channel_index: list[int] = [0] * 32
-        self.server_sequence_channel_index: list[int] = [0] * 32
+        self.send_order_channel_index: list[int] = [0] * 32
+        self.send_sequence_channel_index: list[int] = [0] * 32
         self.last_receive_time: float = time()
     
     def update(self):
@@ -95,8 +95,8 @@ class Connection:
         for sequence_number in packet.sequence_numbers:
             if sequence_number in self.recovery_queue:
                 lost_packet: FrameSet = self.recovery_queue[sequence_number]
-                lost_packet.sequence_number = self.server_sequence_number
-                self.server_sequence_number += 1
+                lost_packet.sequence_number = self.send_sequence_number
+                self.send_sequence_number += 1
                 lost_packet.encode()
                 self.send_data(lost_packet.data)
                 del self.recovery_queue[sequence_number]
@@ -104,25 +104,25 @@ class Connection:
     def handle_frame_set(self, data: bytes) -> None:
         packet: FrameSet = FrameSet(data)
         packet.decode()
-        if packet.sequence_number not in self.client_sequence_numbers:
+        if packet.sequence_number not in self.receive_sequence_numbers:
             if packet.sequence_number in self.nack_queue:
                 self.nack_queue.remove(packet.sequence_number)
-            self.client_sequence_numbers.append(packet.sequence_number)
+            self.receive_sequence_numbers.append(packet.sequence_number)
             self.ack_queue.append(packet.sequence_number)
-            hole_size: int = packet.sequence_number - self.client_sequence_number
+            hole_size: int = packet.sequence_number - self.receive_sequence_number
             if hole_size > 0:
-                for sequence_number in range(self.client_sequence_number + 1, hole_size):
-                    if sequence_number not in self.client_sequence_numbers:
+                for sequence_number in range(self.receive_sequence_number + 1, hole_size):
+                    if sequence_number not in self.receive_sequence_numbers:
                         self.nack_queue.append(sequence_number)
-            self.client_sequence_number = packet.sequence_number
+            self.receive_sequence_number = packet.sequence_number
             for frame in packet.frames:
                 if not ReliabilityTool.reliable(frame.reliability):
                     self.handle_frame(frame)
                 else:
-                    hole_size: int = frame.reliable_frame_index - self.client_reliable_frame_index
+                    hole_size: int = frame.reliable_frame_index - self.receive_reliable_frame_index
                     if hole_size == 0:
                         self.handle_frame(frame)
-                        self.client_reliable_frame_index += 1
+                        self.receive_reliable_frame_index += 1
                         
     def handle_fragmented_frame(self, frame: Frame) -> None:
         if frame.compound_id not in self.fragmented_packets:
@@ -169,8 +169,8 @@ class Connection:
         
     def send_queue(self) -> None:
         if len(self.queue.frames) > 0:
-            self.queue.sequence_number = self.server_sequence_number
-            self.server_sequence_number += 1
+            self.queue.sequence_number = self.send_sequence_number
+            self.send_sequence_number += 1
             self.recovery_queue[self.queue.sequence_number] = self.queue
             self.queue.encode()
             self.send_data(self.queue.data)
@@ -178,12 +178,12 @@ class Connection:
             
     def add_to_queue(self, frame: Frame) -> None:
         if ReliabilityTool.ordered(frame.reliability):
-            frame.ordered_frame_index = self.server_order_channel_index[frame.order_channel]
-            self.server_order_channel_index[frame.order_channel] += 1
+            frame.ordered_frame_index = self.send_order_channel_index[frame.order_channel]
+            self.send_order_channel_index[frame.order_channel] += 1
         elif ReliabilityTool.sequenced(frame.reliability):
-            frame.ordered_frame_index = self.server_order_channel_index[frame.order_channel]
-            frame.sequenced_frame_index = self.server_sequence_channel_index[frame.order_channel]
-            self.server_sequence_channel_index[frame.order_channel] += 1
+            frame.ordered_frame_index = self.send_order_channel_index[frame.order_channel]
+            frame.sequenced_frame_index = self.send_sequence_channel_index[frame.order_channel]
+            self.send_sequence_channel_index[frame.order_channel] += 1
         if frame.get_size() > self.mtu_size:
             fragmented_body: list[bytes] = []
             for i in range(0, len(frame.body), self.mtu_size):
@@ -197,8 +197,8 @@ class Connection:
                 new_frame.index = index
                 new_frame.body = body
                 if ReliabilityTool.reliable(frame.reliability):
-                    new_frame.reliable_frame_index = self.server_reliable_frame_index
-                    self.server_reliable_frame_index += 1
+                    new_frame.reliable_frame_index = self.send_reliable_frame_index
+                    self.send_reliable_frame_index += 1
                 if ReliabilityTool.sequenced_or_ordered(frame.reliability):
                     new_frame.ordered_frame_index = frame.ordered_frame_index
                     new_frame.order_channel = frame.order_channel
@@ -209,8 +209,8 @@ class Connection:
             self.compound_id += 1
         else:
             if ReliabilityTool.reliable(frame.reliability):
-                frame.reliable_frame_index = self.server_reliable_frame_index
-                self.server_reliable_frame_index += 1
+                frame.reliable_frame_index = self.send_reliable_frame_index
+                self.send_reliable_frame_index += 1
             frame_size: int = frame.get_size()
             queue_size: int = self.queue.get_size()
             if frame_size + queue_size >= self.mtu_size:
