@@ -31,6 +31,7 @@
 
 from rak_net.protocol.handler.online_ping_handler import OnlinePingHandler
 from rak_net.protocol.handler.connection_request_handler import ConnectionRequestHandler
+from rak_net.protocol.handler.connection_request_accepted_handler import ConnectionRequestAcceptedHandler
 from rak_net.protocol.packet.ack import Ack
 from rak_net.protocol.packet.frame import Frame
 from rak_net.protocol.packet.frame_set import FrameSet
@@ -147,6 +148,12 @@ class Connection:
                     new_frame.reliability = 0
                     new_frame.body = ConnectionRequestHandler.handle(frame.body, self.address, self.server)
                     self.add_to_queue(new_frame)
+                elif frame.body[0] == ProtocolInfo.CONNECTION_REQUEST_ACCEPTED:
+                    new_frame: Frame = Frame()
+                    new_frame.reliability = 0
+                    new_frame.body = ConnectionRequestAcceptedHandler.handle(frame.body, self.address, self.server)
+                    self.add_to_queue(new_frame)
+                    self.connected = True
                 elif frame.body[0] == ProtocolInfo.NEW_INCOMING_CONNECTION:
                     packet: NewIncomingConnection = NewIncomingConnection(frame.body)
                     packet.decode()
