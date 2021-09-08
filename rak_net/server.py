@@ -35,7 +35,7 @@ from rak_net.protocol.handler.open_connection_request_1_handler import OpenConne
 from rak_net.protocol.handler.open_connection_request_2_handler import OpenConnectionRequest2Handler
 from rak_net.protocol.protocol_info import ProtocolInfo
 from rak_net.utils.internet_address import InternetAddress
-from rak_net.utils.udp_server_socket import UdpServerSocket
+from rak_net.utils.udp_socket import UdpSocket
 import random
 import sys
 
@@ -45,7 +45,7 @@ class Server:
         self.protocol_version: int = protocol_version
         self.address: InternetAddress = InternetAddress(hostname, port, ipv)
         self.guid: int = random.randint(0, sys.maxsize)
-        self.socket: UdpServerSocket = UdpServerSocket(hostname, port, ipv)
+        self.socket: UdpSocket = UdpSocket(True, ipv, hostname, port)
         self.connections: dict[(str, Connection)] = {}
             
     def add_connection(self, address: InternetAddress, mtu_size: int) -> None:
