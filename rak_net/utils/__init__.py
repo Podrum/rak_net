@@ -31,10 +31,10 @@
 
 from rak_net.utils.internet_address import InternetAddress
 from rak_net.utils.reliability_tool import ReliabilityTool
-from rak_net.utils.udp_server_socket import UdpServerSocket
+from rak_net.utils.udp_socket import UdpSocket
 
 __all__: list[str] = [
     "InternetAddress",
     "ReliabilityTool",
-    "UdpServerSocket"
+    "UdpSocket"
 ]
