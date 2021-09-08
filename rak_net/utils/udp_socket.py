@@ -32,11 +32,12 @@
 import socket
 
 
-class UdpServerSocket:
-    def __init__(self, hostname: str, port: int, version: int = 4) -> None:
-        self.hostname: str = hostname
-        self.port: int = port
+class UdpSocket:
+    def __init__(self, is_server: bool, version: int, hostname: str = "", port: int = 0) -> None:
         self.version: int = version
+        if is_server:
+            self.hostname: str = hostname
+            self.port: int = port
         if version == 4:
             self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.SOL_UDP)
         elif version == 6:
@@ -46,10 +47,11 @@ class UdpServerSocket:
             raise Exception(f"Unknown address version {version}")
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        try:
-            self.socket.bind((hostname, port))
-        except socket.error:
-            raise Exception(f"Failed to bind to {str(port)}")
+        if is_server:
+            try:
+                self.socket.bind((hostname, port))
+            except socket.error:
+                raise Exception(f"Failed to bind to {str(port)}")
         self.socket.setblocking(False)
             
     def receive(self) -> tuple:
