@@ -30,6 +30,7 @@
 ################################################################################
 
 from rak_net.protocol.handler.connection_request_handler import ConnectionRequestHandler
+from rak_net.protocol.handler.connection_request_accepted_handler import ConnectionRequestAcceptedHandler
 from rak_net.protocol.handler.offline_ping_handler import OfflinePingHandler
 from rak_net.protocol.handler.online_ping_handler import OnlinePingHandler
 from rak_net.protocol.handler.open_connection_request_1_handler import OpenConnectionRequest1Handler
@@ -37,6 +38,7 @@ from rak_net.protocol.handler.open_connection_request_2_handler import OpenConne
 
 __all__: list[str] = [
     "ConnectionRequestHandler",
+    "ConnectionRequestAcceptedHandler",
     "OfflinePingHandler",
     "OnlinePingHandler",
     "OpenConnectionRequest1Handler",
