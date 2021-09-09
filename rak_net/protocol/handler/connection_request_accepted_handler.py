@@ -44,6 +44,6 @@ class ConnectionRequestAcceptedHandler:
         new_packet.server_address = address
         new_packet.system_addresses = packet.system_addresses
         new_packet.request_timestamp = packet.accepted_timestamp
-        new_packet.accepted_timestamp = round(time.time() * 1000)
+        new_packet.accepted_timestamp = client.get_time_ms()
         new_packet.encode()
         return new_packet.data
