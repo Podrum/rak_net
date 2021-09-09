@@ -46,6 +46,6 @@ class ConnectionRequestHandler:
         new_packet.server_guid = server.guid
         new_packet.system_addresses = [InternetAddress("255.255.255.255", 19132)] * 20
         new_packet.request_timestamp = packet.request_timestamp
-        new_packet.accepted_timestamp = round(time.time() * 1000)
+        new_packet.accepted_timestamp = server.get_time_ms()
         new_packet.encode()
         return new_packet.data
