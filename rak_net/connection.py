@@ -37,6 +37,8 @@ from rak_net.protocol.packet.frame import Frame
 from rak_net.protocol.packet.frame_set import FrameSet
 from rak_net.protocol.packet.nack import Nack
 from rak_net.protocol.packet.new_incoming_connection import NewIncomingConnection
+from rak_net.protocol.packet.online_ping import OnlinePing
+from rak_net.protocol.packet.online_pong import OnlinePong
 from rak_net.protocol.protocol_info import ProtocolInfo
 from rak_net.utils.internet_address import InternetAddress
 from rak_net.utils.reliability_tool import ReliabilityTool
@@ -63,13 +65,28 @@ class Connection:
         self.send_order_channel_index: list[int] = [0] * 32
         self.send_sequence_channel_index: list[int] = [0] * 32
         self.last_receive_time: float = time()
+        self.ponged: bool = True
+        self.ms: int = 0
     
     def update(self):
         if (time() - self.last_receive_time) >= 10:
             self.disconnect()
+        if self.connected:
+            self.ping()
         self.send_ack_queue()
         self.send_nack_queue()
         self.send_queue()
+        
+    def ping(self) -> None:
+        if self.had_ponged:
+            self.ponged = False
+            packet: OnlinePing = OnlinePing()
+            packet.client_timestamp = round(time() * 1000)
+            packet.encode()
+            new_frame: Frame = Frame()
+            new_frame.reliability = 0
+            new_frame.body = packet.data
+            self.add_to_queue(new_frame)
             
     def send_data(self, data: bytes) -> None:
         self.server.send_data(data, self.address)
@@ -167,6 +184,11 @@ class Connection:
                 new_frame.reliability = 0
                 new_frame.body = OnlinePingHandler.handle(frame.body, self.address, self.server)
                 self.add_to_queue(new_frame)
+            elif frame.body[0] == ProtocolInfo.ONLINE_PONG:
+                packet: OnlinePong = OnlinePong(frame.body)
+                packet.decode()
+                self.ms = (packet.server_timestamp - packet.client_timestamp)
+                self.ponged = True
             elif frame.body[0] == ProtocolInfo.DISCONNECT:
                 self.disconnect()
             else:
