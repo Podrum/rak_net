@@ -187,7 +187,7 @@ class Connection:
             elif frame.body[0] == ProtocolInfo.ONLINE_PONG:
                 packet: OnlinePong = OnlinePong(frame.body)
                 packet.decode()
-                self.ms = (packet.server_timestamp - packet.client_timestamp)
+                self.ms = (self.server.get_time_ms() - packet.client_timestamp)
                 self.ponged = True
             elif frame.body[0] == ProtocolInfo.DISCONNECT:
                 self.disconnect()
