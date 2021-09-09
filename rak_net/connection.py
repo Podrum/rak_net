@@ -78,7 +78,7 @@ class Connection:
         self.send_queue()
         
     def ping(self) -> None:
-        if self.had_ponged:
+        if self.ponged:
             self.ponged = False
             packet: OnlinePing = OnlinePing()
             packet.client_timestamp = round(time() * 1000)
