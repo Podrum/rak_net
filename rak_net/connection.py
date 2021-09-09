@@ -65,28 +65,28 @@ class Connection:
         self.send_order_channel_index: list[int] = [0] * 32
         self.send_sequence_channel_index: list[int] = [0] * 32
         self.last_receive_time: float = time()
-        self.ponged: bool = True
         self.ms: int = 0
+        self.last_ping_time: float = time()
     
     def update(self):
         if (time() - self.last_receive_time) >= 10:
             self.disconnect()
         if self.connected:
-            self.ping()
+            if time() - self.last_ping_time >= 1:
+                self.last_ping_time = time()
+                self.ping()
         self.send_ack_queue()
         self.send_nack_queue()
         self.send_queue()
         
     def ping(self) -> None:
-        if self.ponged:
-            self.ponged = False
-            packet: OnlinePing = OnlinePing()
-            packet.client_timestamp = self.server.get_time_ms()
-            packet.encode()
-            new_frame: Frame = Frame()
-            new_frame.reliability = 0
-            new_frame.body = packet.data
-            self.add_to_queue(new_frame)
+        packet: OnlinePing = OnlinePing()
+        packet.client_timestamp = self.server.get_time_ms()
+        packet.encode()
+        new_frame: Frame = Frame()
+        new_frame.reliability = 0
+        new_frame.body = packet.data
+        self.add_to_queue(new_frame)
             
     def send_data(self, data: bytes) -> None:
         self.server.send_data(data, self.address)
@@ -188,7 +188,6 @@ class Connection:
                 packet: OnlinePong = OnlinePong(frame.body)
                 packet.decode()
                 self.ms = (self.server.get_time_ms() - packet.client_timestamp)
-                self.ponged = True
             elif frame.body[0] == ProtocolInfo.DISCONNECT:
                 self.disconnect()
             else:
