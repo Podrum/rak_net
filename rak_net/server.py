@@ -38,6 +38,7 @@ from rak_net.utils.internet_address import InternetAddress
 from rak_net.utils.udp_socket import UdpSocket
 import random
 import sys
+import time
 
 
 class Server:
@@ -47,6 +48,7 @@ class Server:
         self.guid: int = random.randint(0, sys.maxsize)
         self.socket: UdpSocket = UdpSocket(True, ipv, hostname, port)
         self.connections: dict[(str, Connection)] = {}
+        self.start_time: int = int(time() * 1000)
             
     def add_connection(self, address: InternetAddress, mtu_size: int) -> None:
         self.connections[address.token] = Connection(address, mtu_size, self)
