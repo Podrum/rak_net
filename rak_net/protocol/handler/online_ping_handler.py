@@ -42,6 +42,6 @@ class OnlinePingHandler:
         packet.decode()
         new_packet: OnlinePong = OnlinePong()
         new_packet.client_timestamp = packet.client_timestamp
-        new_packet.server_timestamp = int(time.time())
+        new_packet.server_timestamp = round(time.time() * 1000)
         new_packet.encode()
         return new_packet.data
