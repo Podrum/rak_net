@@ -62,10 +62,10 @@ class Connection:
         self.queue: FrameSet = FrameSet()
         self.send_order_channel_index: list[int] = [0] * 32
         self.send_sequence_channel_index: list[int] = [0] * 32
-        self.last_acknowledgement_time: float = time()
+        self.last_receive_time: float = time()
     
     def update(self):
-        if (time() - self.last_acknowledgement_time) >= 10:
+        if (time() - self.last_receive_time) >= 10:
             self.disconnect()
         self.send_ack_queue()
         self.send_nack_queue()
@@ -75,11 +75,10 @@ class Connection:
         self.server.send_data(data, self.address)
 
     def handle(self, data: bytes) -> None:
+        self.last_receive_time = time()
         if data[0] == ProtocolInfo.ACK:
-            self.last_acknowledgement_time = time()
             self.handle_ack(data)
         elif data[0] == ProtocolInfo.NACK:
-            self.last_acknowledgement_time = time()
             self.handle_nack(data)
         elif (data[0] & ProtocolInfo.FRAME_SET) != 0:
             self.handle_frame_set(data)
