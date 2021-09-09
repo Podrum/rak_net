@@ -50,6 +50,9 @@ class Server:
         self.connections: dict[(str, Connection)] = {}
         self.start_time: int = int(time.time() * 1000)
             
+    def get_time_ms(self) -> int:
+        return int(time.time() * 1000) - self.start_time
+            
     def add_connection(self, address: InternetAddress, mtu_size: int) -> None:
         self.connections[address.token] = Connection(address, mtu_size, self)
         
