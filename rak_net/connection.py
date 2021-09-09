@@ -204,6 +204,15 @@ class Connection:
             self.send_data(self.queue.data)
             self.queue = FrameSet()
             
+    def append_frame(self, frame: Frame, immediate: bool) -> None:
+        frame_size: int = frame.get_size()
+        queue_size: int = self.queue.get_size()
+        if frame_size + queue_size >= self.mtu_size:
+            self.send_queue()
+        self.queue.frames.append(frame)
+        if immediate:
+            self.send_queue()
+            
     def add_to_queue(self, frame: Frame) -> None:
         if ReliabilityTool.ordered(frame.reliability):
             frame.ordered_frame_index = self.send_order_channel_index[frame.order_channel]
@@ -232,18 +241,13 @@ class Connection:
                     new_frame.order_channel = frame.order_channel
                 if ReliabilityTool.sequenced(frame.reliability):
                     new_frame.sequenced_frame_index = frame.sequenced_frame_index
-                self.queue.frames.append(new_frame)
-                self.send_queue()
+                self.append_frame(new_frame, True)
             self.compound_id += 1
         else:
             if ReliabilityTool.reliable(frame.reliability):
                 frame.reliable_frame_index = self.send_reliable_frame_index
                 self.send_reliable_frame_index += 1
-            frame_size: int = frame.get_size()
-            queue_size: int = self.queue.get_size()
-            if frame_size + queue_size >= self.mtu_size:
-                self.send_queue()
-            self.queue.frames.append(frame)
+            self.append_frame(frame, False)
         
     def send_ack_queue(self) -> None:
         if len(self.ack_queue) > 0:
