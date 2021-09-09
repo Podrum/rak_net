@@ -81,7 +81,7 @@ class Connection:
         if self.ponged:
             self.ponged = False
             packet: OnlinePing = OnlinePing()
-            packet.client_timestamp = round(time() * 1000)
+            packet.client_timestamp = self.server.get_time_ms()
             packet.encode()
             new_frame: Frame = Frame()
             new_frame.reliability = 0
