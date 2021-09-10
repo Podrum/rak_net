@@ -205,13 +205,20 @@ class Connection:
             self.queue = FrameSet()
             
     def append_frame(self, frame: Frame, immediate: bool) -> None:
-        frame_size: int = frame.get_size()
-        queue_size: int = self.queue.get_size()
-        if frame_size + queue_size >= self.mtu_size:
-            self.send_queue()
-        self.queue.frames.append(frame)
         if immediate:
-            self.send_queue()
+            packet: FrameSet = FrameSet()
+            packet.frames.append(frame)
+            packet.sequence_number = self.send_sequence_number
+            self.send_sequence_number += 1
+            self.recovery_queue[packet.sequence_number] = packet
+            packet.encode()
+            self.send_data(packet.data)
+        else:
+            frame_size: int = frame.get_size()
+            queue_size: int = self.queue.get_size()
+            if frame_size + queue_size >= self.mtu_size:
+                self.send_queue()
+            self.queue.frames.append(frame)
             
     def add_to_queue(self, frame: Frame) -> None:
         if ReliabilityTool.ordered(frame.reliability):
