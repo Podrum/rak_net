@@ -29,6 +29,7 @@
 #                                                                              #
 ################################################################################
 
+from copy import copy
 from rak_net.protocol.handler.online_ping_handler import OnlinePingHandler
 from rak_net.protocol.handler.connection_request_handler import ConnectionRequestHandler
 from rak_net.protocol.handler.connection_request_accepted_handler import ConnectionRequestAcceptedHandler
@@ -259,7 +260,7 @@ class Connection:
     def send_ack_queue(self) -> None:
         if len(self.ack_queue) > 0:
             packet: Ack = Ack()
-            packet.sequence_numbers = self.ack_queue
+            packet.sequence_numbers = copy(self.ack_queue)
             packet.encode()
             self.ack_queue.clear()
             self.send_data(packet.data)
@@ -267,7 +268,7 @@ class Connection:
     def send_nack_queue(self) -> None:
         if len(self.nack_queue) > 0:
             packet: Nack = Nack()
-            packet.sequence_numbers = self.nack_queue
+            packet.sequence_numbers = copy(self.nack_queue)
             packet.encode()
             self.nack_queue.clear()
             self.send_data(packet.data)
