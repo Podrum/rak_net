@@ -52,8 +52,8 @@ class Server:
         self.connections: dict[(str, Connection)] = {}
         self.start_time: int = int(time.time() * 1000)
         if is_async:
-            self.asyncio.get_event_loop().create_task(self.tick_task())
-            self.asyncio.get_event_loop().create_task(self.handle_task())
+            asyncio.get_event_loop().create_task(self.tick_task())
+            asyncio.get_event_loop().create_task(self.handle_task())
             
     def get_time_ms(self) -> int:
         return int(time.time() * 1000) - self.start_time
