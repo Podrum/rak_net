@@ -29,6 +29,7 @@
 #                                                                              #
 ################################################################################
 
+import asyncio
 from rak_net.connection import Connection
 from rak_net.protocol.handler.offline_ping_handler import OfflinePingHandler
 from rak_net.protocol.handler.open_connection_request_1_handler import OpenConnectionRequest1Handler
@@ -42,13 +43,17 @@ import time
 
 
 class Server:
-    def __init__(self, protocol_version: int, hostname: str, port: int, ipv: int = 4) -> None:
+    def __init__(self, is_async: bool, protocol_version: int, hostname: str, port: int, ipv: int = 4, tps: int = 100) -> None:
+        self.tick_sleep_time: float = 1 / tps
         self.protocol_version: int = protocol_version
         self.address: InternetAddress = InternetAddress(hostname, port, ipv)
         self.guid: int = random.randint(0, sys.maxsize)
         self.socket: UdpSocket = UdpSocket(True, ipv, hostname, port)
         self.connections: dict[(str, Connection)] = {}
         self.start_time: int = int(time.time() * 1000)
+        if is_async:
+            self.asyncio.get_event_loop().create_task(self.tick_task())
+            self.asyncio.get_event_loop().create_task(self.handle_task())
             
     def get_time_ms(self) -> int:
         return int(time.time() * 1000) - self.start_time
@@ -66,6 +71,20 @@ class Server:
             
     def send_data(self, data: bytes, address: InternetAddress) -> None:
         self.socket.send(data, address.hostname, address.port)
+        
+    async def tick_task(self) -> None:
+        while True:
+            self.tick()
+            await asyncio.sleep(self.tick_sleep_time)
+            
+    async def handle_task(self) -> None:
+        while True:
+            self.handle()
+            await asyncio.sleep(self.tick_sleep_time)
+            
+    def tick(self) -> None:
+        for connection in dict(self.connections).values():
+            connection.update()
 
     def handle(self) -> None:
         recv: tuple = self.socket.receive()
@@ -79,5 +98,3 @@ class Server:
                 self.send_data(OpenConnectionRequest1Handler.handle(recv[0], address, self), address)
             elif recv[0][0] == ProtocolInfo.OPEN_CONNECTION_REQUEST_2:
                 self.send_data(OpenConnectionRequest2Handler.handle(recv[0], address, self), address)
-        for connection in dict(self.connections).values():
-            connection.update()
