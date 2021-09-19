@@ -33,8 +33,8 @@ from rak_net.utils.internet_address import InternetAddress
 from rak_net.utils.reliability_tool import ReliabilityTool
 from rak_net.utils.udp_socket import UdpSocket
 
-__all__: list[str] = [
+__all__ = (
     "InternetAddress",
     "ReliabilityTool",
     "UdpSocket"
-]
+)
