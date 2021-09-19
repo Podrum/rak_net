@@ -36,6 +36,7 @@ from rak_net.protocol.handler.online_ping_handler import OnlinePingHandler
 from rak_net.protocol.handler.open_connection_request_1_handler import OpenConnectionRequest1Handler
 from rak_net.protocol.handler.open_connection_request_2_handler import OpenConnectionRequest2Handler
 
+
 __all__ = (
     "ConnectionRequestHandler",
     "ConnectionRequestAcceptedHandler",
