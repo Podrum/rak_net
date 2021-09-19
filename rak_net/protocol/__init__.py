@@ -31,6 +31,6 @@
 
 from rak_net.protocol.protocol_info import ProtocolInfo
 
-__all__: list[str] = [
+__all__ = (
     "ProtocolInfo"
-]
+)
