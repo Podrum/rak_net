@@ -32,7 +32,7 @@
 from rak_net.connection import Connection
 from rak_net.server import Server
 
-__all__: list[str] = [
+__all__ = (
     "Connection",
     "Server"
-]
+)
