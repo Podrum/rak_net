@@ -36,11 +36,11 @@ from rak_net.protocol.handler.online_ping_handler import OnlinePingHandler
 from rak_net.protocol.handler.open_connection_request_1_handler import OpenConnectionRequest1Handler
 from rak_net.protocol.handler.open_connection_request_2_handler import OpenConnectionRequest2Handler
 
-__all__: list[str] = [
+__all__ = (
     "ConnectionRequestHandler",
     "ConnectionRequestAcceptedHandler",
     "OfflinePingHandler",
     "OnlinePingHandler",
     "OpenConnectionRequest1Handler",
     "OpenConnectionRequest2Handler"
-]
+)
