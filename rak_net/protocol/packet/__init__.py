@@ -49,7 +49,6 @@ from rak_net.protocol.packet.open_connection_request_1 import OpenConnectionRequ
 from rak_net.protocol.packet.open_connection_request_2 import OpenConnectionRequest2
 from rak_net.protocol.packet.packet import Packet
 
-
 __all__ = (
     "Ack",
     "Acknowledgement",
