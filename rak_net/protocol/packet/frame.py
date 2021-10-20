@@ -29,11 +29,11 @@
 #                                                                              #
 ################################################################################
 
-from binary_utils.binary_stream import binary_stream
+from binary_utils.binary_stream import BinaryStream
 from rak_net.utils.reliability_tool import ReliabilityTool
 
 
-class Frame(binary_stream):
+class Frame(BinaryStream):
     def __init__(self, data: bytes = b"", pos: int = 0):
         super().__init__(data, pos)
         self.reliability: int = 0
